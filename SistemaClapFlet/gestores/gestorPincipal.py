@@ -2,7 +2,9 @@ from flet import ScrollMode, Container, Text, SnackBar, Dropdown, dropdown, alig
 from controlador.conexion import db
 from controlador.rutas import rutas
 from controlador.mensajes import mensaje
+from gestores.gestorLiderPolitico import editarDatosUsuario
 from modelo.modelPrincipal import jefeFamilia, liderCalle
+from modelo.consultas import consulta
 import modelo.reporte
 from modelo.reporte import Pdf
 
@@ -113,7 +115,7 @@ class gestionPrincipal:
 class cartasJefesFamilia:
     #LIMPIA EL CONTEDOR DE LAS CARTAS
     def volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros):
-        if db.verificarJefesFamiliaCartas(iDLiderCalle):
+        if db.consultaConRetorno(consulta.verificarJefesFamiliaCartas, [iDLiderCalle,]):
             gestionPrincipal.columnaCards.controls.clear()
             gestionPrincipal.tituloAgregarJefes.visible = False
             gestionPrincipal.columnaCards.controls = cartasJefesFamilia.generarCards(page, iDLiderCalle, tablaPedido, tablaCilindros)
@@ -122,7 +124,7 @@ class cartasJefesFamilia:
             pass
     
     def generarCards(page, iDLiderCalle, tablaPedido, tablaCilindros):
-        for ids, nom, ape, ci in db.obtenerInfoJefesFamiliaCartas(iDLiderCalle):
+        for ids, nom, ape, ci in db.consultaConRetorno(consulta.obtenerInfoJefesFamiliaCartas, [iDLiderCalle,]):
             gestionPrincipal.cartas.append(
                 Container(
                     bgcolor="RED",
@@ -146,7 +148,7 @@ class formularioJefeFamilia:
     #VER CONTENIDO
     #ESTA FUNCION HACE UNA CONSULTA A LA TABLA PEDIDOS SI RETORNA ALGO SE ACTIVA LA OTRA DATATABLE
     def generarJefe(idJefeFamilia, page, nombre, tablaCilindros, tablaPedido):
-        resultadoQuery = db.obtenerCilindrosJefeFamilia(idJefeFamilia)
+        resultadoQuery = db.consultaConRetorno(consulta.obtenerCilindrosJefeFamilia, [idJefeFamilia,])
 
         tablaCilindros.rows.clear()
         gestionPrincipal.titulo.value = f"Cilindros de {nombre}"
@@ -169,7 +171,7 @@ class formularioJefeFamilia:
         page.update()
 
     def quitarCilindrosRepetidos(page, idJefeFamilia, tablaCilindros):
-        resultadoC = db.quitarCilindrosRepetidos(idJefeFamilia)
+        resultadoC = db.consultaConRetorno(consulta.obtenerCilindrosRepetidos, [idJefeFamilia,])
 
         numFilas = tablaCilindros.rows[:]
 
@@ -186,7 +188,7 @@ class formularioJefeFamilia:
         global cedulaIdentidad
         cedulaIdentidad = idJefeFamilia
 
-        resultado = db.mostrarCilindrosJefeFamilia(idJefeFamilia)
+        resultado = db.consultaConRetorno(consulta.mostrarCilindrosJefeFamilia, [idJefeFamilia,])
 
         for idss, empresa, tamano, pico, fecaRegistrada in resultado:
             gestionPrincipal.cells.append(DataRow(
@@ -227,7 +229,7 @@ class formularioJefeFamilia:
 
     def seleccionarJornada(idsss, idJefeFamilia, page, nombre, tablaCilindros, tablaPedido):
         fecha = datetime.today().strftime('%d-%m-%Y')
-        db.guardarCilindrosPedidos(idsss, fecha)
+        db.consultaSinRetorno(consulta.guardarCilindrosPedidos, [idsss, fecha])
 
         formularioJefeFamilia.generarJefe(idJefeFamilia, page, nombre, tablaCilindros, tablaPedido)
 
@@ -243,7 +245,7 @@ class registrarJefeFamiliaCilindros:
         arregloCorreo = f"{correo.value}{tipoCorreo.value}"
         arregloTelefono = f"{codigoTelefono.value}-{numeroTelefono.value}"
 
-        verificarCedulaJefesFamilia = db.verificarCedulaJefesFamilia(arregloCedula)
+        verificarCedulaJefesFamilia = db.consultaConRetorno(consulta.verificarCedulaJefesFamilia, [arregloCedula,])
 
         if (nombre.value == "") or (apellido.value == "") or (cedula.value == "") or (numeroTelefono.value == "") or (correo.value == "") or (tipoCorreo.value == None) or (codigoTelefono.value == None) or (cantidadCi.value == 0) or (len(nombre.value) in range(1, 3)) or (len(apellido.value) in range(1, 4)) or (len(cedula.value) in range(1, 7)) or (len(numeroTelefono.value) in range(1, 7)):
             
@@ -277,12 +279,12 @@ class registrarJefeFamiliaCilindros:
             page.snack_bar.open = True
             page.update()
 
-        elif db.verificarTelefonoJefesFamilia(arregloTelefono):
+        elif db.consultaConRetorno(consulta.verificarTelefonoJefesFamilia, [arregloTelefono,]):
             page.snack_bar = SnackBar(content=Text("Este numero de telefono ya esta asignado a un usuario"))
             page.snack_bar.open = True
             page.update()
 
-        elif db.verificarCorreoJefesFamilia(arregloCorreo):
+        elif db.consultaConRetorno(consulta.verificarCorreoJefesFamilia, [arregloCorreo,]):
             page.snack_bar = SnackBar(content=Text("Este correo ya esta en uso"))
             page.snack_bar.open = True
             page.update()
@@ -307,15 +309,15 @@ class registrarJefeFamiliaCilindros:
             tamano = Dropdown(hint_text="Seleccionar tamaño", height=60, width=130)
             pico = Dropdown(hint_text="Seleccionar pico", height=60, width=130)
             
-            for emp in db.obtenerEmpresas():
+            for emp in db.consultaConRetorno(consulta.obtenerEmpresas):
                 empresa.options.append(dropdown.Option(emp[0]))
 
             
-            for tam in db.obtenerTamanos():
+            for tam in db.consultaConRetorno(consulta.obtenerTamanos):
                 tamano.options.append(dropdown.Option(tam[0]))
 
 
-            for pic in db.obtenerPicos():
+            for pic in db.consultaConRetorno(consulta.obtenerPicos):
                 pico.options.append(dropdown.Option(pic[0]))
 
             empresa.value = "Radelco"
@@ -374,20 +376,20 @@ class registrarJefeFamiliaCilindros:
         page.update()
 
         #INSERTAR LOS DATOS DEL LIDER DE FAMILIA
-        db.guardarJefeFamilia(arregloCedula, nombre.value, apellido.value, arregloTelefono, arregloCorreo, iDLiderCalle)
+        db.consultaSinRetorno(consulta.guardarJefeFamilia, [arregloCedula, nombre.value, apellido.value, arregloTelefono, arregloCorreo, iDLiderCalle])
 
         #OBTENER EL ID DEL LIDER DE FAMILIA
-        idJefeFamiliar = db.obtenerIdJefeFamilia(arregloCedula)
+        idJefeFamiliar = db.consultaConRetorno(consulta.obtenerIdJefeFamilia, [arregloCedula,])
 
         #CICLO PARA OBTENER LOS IDS
         for empresa, tamano, pico in gestionPrincipal.datosCilindrosLista:
-            resultadoIdEmpresa = db.obtenerIdEmpresa(empresa.value)
+            resultadoIdEmpresa = db.consultaConRetorno(consulta.obtenerIdEmpresa, [empresa.value,])
             resultadoIdEmpresa = resultadoIdEmpresa[0][0]
 
-            resultadoIdTamano = db.obtenerIdTamano(tamano.value)
+            resultadoIdTamano = db.consultaConRetorno(consulta.obtenerIdTamano, [tamano.value,])
             resultadoIdTamano = resultadoIdTamano[0][0]
 
-            resultadoIdPico = db.obtenerIdPico(pico.value)
+            resultadoIdPico = db.consultaConRetorno(consulta.obtenerIdPico, [pico.value,])
             resultadoIdPico = resultadoIdPico[0][0]
 
             gestionPrincipal.listaId.append([resultadoIdEmpresa, resultadoIdPico, resultadoIdTamano])
@@ -397,7 +399,7 @@ class registrarJefeFamiliaCilindros:
             fecha = datetime.today().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
             fecha = str(fecha)
 
-            db.guardarCilindros(str(empresaId), str(picoId), str(tamanoId), idJefeFamiliar[0][0], str(fecha))
+            db.consultaSinRetorno(consulta.guardarCilindros, [str(empresaId), str(picoId), str(tamanoId), idJefeFamiliar[0][0], str(fecha)])
             sleep(0.1)
 
         mensaje.cerrarAlert(page, alert)
@@ -408,7 +410,7 @@ class editarDatosJefeFamilia:
     #MOSTRAR LOS DATOS DE LOS JEFES
     def cargarDatosJefe(page):
         global datosJefeFamilia
-        resultado = db.mostrarDatosJefe(cedulaIdentidad)
+        resultado = db.consultaConRetorno(consulta.mostrarDatosJefe, [cedulaIdentidad,])
         datosJefeFamilia = jefeFamilia(resultado[0][2], resultado[0][0], resultado[0][1], resultado[0][3], resultado[0][4], resultado[0][5])
 
         gestionPrincipal.nombreJ.value = f"{datosJefeFamilia.datos()[1]}"
@@ -465,7 +467,7 @@ class editarDatosJefeFamilia:
                 widgetNombreJ.error_text = mensaje.minimoCaracteres(3)
                 page.update()
         else:
-            db.actualizarNombreJefe(widgetNombreJ.value, cedulaIdentidad)
+            db.consultaSinRetorno(consulta.actualizarNombreJefe, [widgetNombreJ.value, cedulaIdentidad])
             cartasJefesFamilia.volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros)
             editarDatosJefeFamilia.cargarDatosJefe(page)
             mensaje.cerrarAlert(page, alertEditNombre)
@@ -516,7 +518,7 @@ class editarDatosJefeFamilia:
                 widgetApellidoJ.error_text = mensaje.minimoCaracteres(4)
                 page.update()
         else:
-            db.actualizarApellidoJefe(widgetApellidoJ.value, cedulaIdentidad)
+            db.consultaSinRetorno(consulta.actualizarApellidoJefe, [widgetApellidoJ.value, cedulaIdentidad])
             cartasJefesFamilia.volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros)
             editarDatosJefeFamilia.cargarDatosJefe(page)
             mensaje.cerrarAlert(page, alertEditApellido)
@@ -581,13 +583,13 @@ class editarDatosJefeFamilia:
                 correo.error_text = mensaje.campoFaltante
                 page.update()
 
-        elif db.verificarCorreoEditar(arregloCorreo):
+        elif db.consultaConRetorno(consulta.verificarCorreoEditar, [arregloCorreo,]):
             page.snack_bar = SnackBar(content=Text("Esta correo ya esta registrado"))
             page.snack_bar.open = True
             page.update()
         
         else:
-            db.actualizarCorreoJefe(arregloCorreo, cedulaIdentidad)
+            db.consultaSinRetorno([arregloCorreo, cedulaIdentidad])
             cartasJefesFamilia.volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros)
             editarDatosJefeFamilia.cargarDatosJefe(page)
             mensaje.cerrarAlert(page, alertEditCorreo)
@@ -648,13 +650,13 @@ class editarDatosJefeFamilia:
                 telefono.error_text = "numero de telefono invalido"
                 page.update()
 
-        elif db.verificarTelefonoEditar(arregloTelefono):
+        elif db.consultaConRetorno(consulta.verificarTelefonoEditar, [arregloTelefono,]):
             page.snack_bar = SnackBar(content=Text("Esta numero de telefono ya esta registrada"))
             page.snack_bar.open = True
             page.update()
         
         else:
-            db.actualizarTelefonoJefe(arregloTelefono, cedulaIdentidad)
+            db.consultaSinRetorno(consulta.actualizarTelefonoJefe, [arregloTelefono, cedulaIdentidad])
             cartasJefesFamilia.volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros)
             editarDatosJefeFamilia.cargarDatosJefe(page)
             mensaje.cerrarAlert(page, alertEditTelefono)
@@ -678,13 +680,13 @@ class crudCilindros:
         tamanoAnadir = Dropdown(hint_text="Seleccionar tamaño", height=60, width=240, on_change=lambda _: mensaje.quitarError(page, tamanoAnadir))
         picoAnadir = Dropdown(hint_text="Seleccionar pico", height=60, width=240, on_change=lambda _: mensaje.quitarError(page, picoAnadir))
 
-        for emp in db.obtenerEmpresas():
+        for emp in db.consultaConRetorno(consulta.obtenerEmpresas):
             empresaAnadir.options.append(dropdown.Option(emp[0]))
             
-        for tam in db.obtenerTamanos():
+        for tam in db.consultaConRetorno(consulta.obtenerTamanos):
             tamanoAnadir.options.append(dropdown.Option(tam[0]))
 
-        for pic in db.obtenerPicos():
+        for pic in db.consultaConRetorno(consulta.obtenerPicos):
             picoAnadir.options.append(dropdown.Option(pic[0]))
 
         alertAnadir = AlertDialog(
@@ -724,16 +726,16 @@ class crudCilindros:
         tamanoEdit = Dropdown(hint_text="Seleccionar tamaño", height=60, width=240)
         picoEdit = Dropdown(hint_text="Seleccionar pico", height=60, width=240)
 
-        for emp in db.obtenerEmpresas():
+        for emp in db.consultaConRetorno(consulta.obtenerEmpresas):
             empresaEdit.options.append(dropdown.Option(emp[0]))
             
-        for tam in db.obtenerTamanos():
+        for tam in db.consultaConRetorno(consulta.obtenerTamanos):
             tamanoEdit.options.append(dropdown.Option(tam[0]))
 
-        for pic in db.obtenerPicos():
+        for pic in db.consultaConRetorno(consulta.obtenerPicos):
             picoEdit.options.append(dropdown.Option(pic[0]))
 
-        resultadoGeneral = db.editarCilindro(ids)
+        resultadoGeneral = db.consultaConRetorno(consulta.editarCilindro, [ids,])
 
         empresaV = resultadoGeneral[0][0]
         tamanoV = resultadoGeneral[0][1]
@@ -785,7 +787,7 @@ class crudCilindros:
     
     #FUNCIONES QUE SE ENCARGAN DEL CRUD
     def EliminarCilindro(idCilindro, page, nombre, tablaCilindros, tablaPedido, alertEliminar):
-        db.eliminarCilindro(idCilindro)
+        db.consultaSinRetorno(consulta.eliminarCilindro, [idCilindro,])
         mensaje.cerrarAlert(page, alertEliminar)
         formularioJefeFamilia.generarJefe(cedulaIdentidad, page, nombre, tablaCilindros, tablaPedido)
 
@@ -807,16 +809,16 @@ class crudCilindros:
                 return
 
         else:
-            resultadoIdEmpresa = db.obtenerIdEmpresa(empresa.value)
-            resultadoIdTamano = db.obtenerIdTamano(tamano.value)
-            resultadoIdPico = db.obtenerIdPico(pico.value)
+            resultadoIdEmpresa = db.consultaConRetorno(consulta.obtenerIdEmpresa, [empresa.value,])
+            resultadoIdTamano = db.consultaConRetorno(consulta.obtenerIdTamano, [tamano.value,])
+            resultadoIdPico = db.consultaConRetorno(consulta.obtenerIdPico, [pico.value,])
 
             fecha = datetime.today().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
-            db.guardarCilindros(resultadoIdEmpresa[0][0], resultadoIdPico[0][0], resultadoIdTamano[0][0], cedulaIdentidad, fecha)
+            db.consultaSinRetorno(consulta.guardarCilindros, [resultadoIdEmpresa[0][0], resultadoIdPico[0][0], resultadoIdTamano[0][0], cedulaIdentidad, fecha])
             mensaje.cerrarAlert(page, alertAnadir)
 
-            nombre = db.mostrarDatosJefe(cedulaIdentidad)
+            nombre = db.consultaConRetorno(consulta.mostrarDatosJefe, [cedulaIdentidad,])
 
             formularioJefeFamilia.generarJefe(cedulaIdentidad, page, nombre[0][0], tablaCilindros, tablaPedido)
 
@@ -826,11 +828,11 @@ class crudCilindros:
             page.update()
 
     def editarCilindro(page, emp, tamn, pic, idsss, nombree, tablaCilindros, tablaPedido, alertEditar):
-        resultadoIdEmpresa = db.obtenerIdEmpresa(emp.value)
-        resultadoIdTamano = db.obtenerIdTamano(tamn.value)
-        resultadoIdPico = db.obtenerIdPico(pic.value)
+        resultadoIdEmpresa = db.consultaConRetorno(consulta.obtenerIdEmpresa, [emp.value,])
+        resultadoIdTamano = db.consultaConRetorno(consulta.obtenerIdTamano, [tamn.value,])
+        resultadoIdPico = db.consultaConRetorno(consulta.obtenerIdPico, [pic.value,])
 
-        db.guardarCambioCilindro(resultadoIdEmpresa[0][0], resultadoIdPico[0][0], resultadoIdTamano[0][0], idsss)
+        db.consultaSinRetorno(consulta.guardarCambioCilindro, [resultadoIdEmpresa[0][0], resultadoIdPico[0][0], resultadoIdTamano[0][0], idsss])
         mensaje.cerrarAlert(page, alertEditar)
         formularioJefeFamilia.generarJefe(cedulaIdentidad, page, nombree, tablaCilindros, tablaPedido)
 
@@ -840,7 +842,7 @@ class crudCilindros:
         page.update()
 
     def eliminarJornadaJefe(idCilindro, page, nombre, tablaCilindros, tablaPedido):
-        db.eliminarCilindroJornadaJefe(idCilindro)
+        db.consultaSinRetorno(consulta.eliminarCilindroJornadaJefe, [idCilindro,])
 
         formularioJefeFamilia.generarJefe(cedulaIdentidad, page, nombre, tablaCilindros, tablaPedido)
 
@@ -854,7 +856,7 @@ class reporteJornada:
         page.update()
 
     def generarJornada(page, iDLiderCalle):
-        resultado = db.obtenerReportesPedidos(iDLiderCalle)
+        resultado = db.consultaConRetorno(consulta.obtenerReportesPedidos, [iDLiderCalle,])
 
         for idss, cii, nom, ape, empresa, tamano, pico, fechaAgregado in resultado:
             gestionPrincipal.jorn.append(DataRow(
@@ -878,7 +880,7 @@ class reporteJornada:
 
     #REMOVER CILINDROS DE UNA JORNADA
     def eliminarJornada(ids, page):
-        db.eliminarCilindroJornada(ids)
+        db.consultaSinRetorno(consulta.eliminarCilindroJornada, [ids,])
 
         reporteJornada.volverGenerarJornada(page, mensaje.datosUsuarioLista[0][0])
 
@@ -901,8 +903,8 @@ class reporteJornada:
     def abrirJornada(page, alertJornada, indicator, textoEspera):
         fecha = datetime.today().strftime('%d-%m-%Y')
 
-        if db.verificarPedidos(mensaje.datosUsuarioLista[0][0]):
-            if db.verificarGeneracion(mensaje.datosUsuarioLista[0][0], fecha):
+        if db.consultaConRetorno(consulta.verificarPedidos, [mensaje.datosUsuarioLista[0][0],]):
+            if db.consultaConRetorno(consulta.verificarGeneracion, [mensaje.datosUsuarioLista[0][0], fecha]):
                 mensaje.cerrarAlert(page, alertJornada)
                 page.snack_bar = SnackBar(content=Text("Solo puedes generar un Reporte por Dia"))
                 page.snack_bar.open = True
@@ -957,7 +959,7 @@ class historial:
         page.update()
 
     def llenarHistroial(page, ids):
-        resultado = db.obtenerHistorial(ids)
+        resultado = db.consultaConRetorno(consulta.obtenerHistorial, [ids,])
 
         for idss, cii, nom, ape, empresa, tamano, pico, fech in resultado:
             gestionPrincipal.contenido.append(DataRow(
@@ -990,11 +992,11 @@ class archivoPdf:
     def generarArchivos(page):
         coun = 1
 
-        resultadoId = db.obtenerIdArchivos(mensaje.datosUsuarioLista[0][0])
+        resultadoId = db.consultaConRetorno(consulta.obtenerIdArchivos, [mensaje.datosUsuarioLista[0][0],])
 
         for idss in resultadoId:
 
-            datos = db.obtenerFechasJornadas(idss[0])
+            datos = db.consultaConRetorno(consulta.obtenerFechasJornadas, [idss[0],])
 
             gestionPrincipal.bitacoraLista.append([datos[0][0], datos[0][1]])
 
@@ -1015,7 +1017,7 @@ class archivoPdf:
         return gestionPrincipal.his
     
     def descargarArchivo(page, alertt, ids):
-        origen = db.origenRutaArchivo(ids)
+        origen = db.consultaConRetorno(consulta.origenRutaArchivo, [ids,])
         destino = os.path.join(os.path.join(os.environ['USERPROFILE']), rf'Desktop\Reportes')
 
         rutaEscritorio = os.path.join(os.path.join(os.environ['USERPROFILE']), rf'Desktop\Reportes')
@@ -1035,7 +1037,7 @@ class archivoPdf:
 class editarDatosLiderCalle:
     def cargarDatosLider(page):
         global datosLiderCalle
-        resultado = db.mostrarDatosLider(mensaje.datosUsuarioLista[0][0])
+        resultado = db.consultaConRetorno(consulta.mostrarDatosLider, [mensaje.datosUsuarioLista[0][0],])
         datosLiderCalle = liderCalle(resultado[0][0], resultado[0][1], resultado[0][2], resultado[0][3], resultado[0][4], resultado[0][5])
 
         gestionPrincipal.nombreLi.value = f"{resultado[0][0]}"
@@ -1048,7 +1050,7 @@ class editarDatosLiderCalle:
         page.update()
 
     #SECCION NOMBRE
-    def editNombreLi(page):
+    def editNombreLi(page, slider):
         entryNombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), mensaje.validarNombres(entryNombre, page)])
         entryNombre.value = datosLiderCalle.datos()[0]
 
@@ -1069,7 +1071,7 @@ class editarDatosLiderCalle:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosLiderCalle.validarNombreLi(page, entryNombre, alertEditNombre)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, entryNombre, alertEditNombre, 3, consulta.actualizarNombreLider, slider, editarDatosLiderCalle.cargarDatosLider, mensaje.nombreEditadoFinal, True)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre))
                     ]
                 )
@@ -1081,24 +1083,8 @@ class editarDatosLiderCalle:
 
         page.update()
 
-    def validarNombreLi(page, widget, alertEditNombre):
-        if (widget.value == "") or (len(widget.value) in range(1, 3)):
-            if widget.value == "":
-                widget.error_text = mensaje.campofaltante
-            if len(widget.value) in range(1, 3):
-                widget.error_text = mensaje.minimoCaracteres(3)
-                page.update()
-        else:
-            db.actualizarNombreLider(widget.value, mensaje.datosUsuarioLista[0][0])
-            gestionPrincipal.textoSlider.value = f"{widget.value}"
-            editarDatosLiderCalle.cargarDatosLider(page)
-            mensaje.cerrarAlert(page, alertEditNombre)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El nombre se modifico correctamente"))
-            page.snack_bar.open = True
-            page.update()
-
     #SECCION APELLIDO
-    def editApellidoLi(page):
+    def editApellidoLi(page, slider):
 
         entryApellido = TextField(label="Apellido", hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), mensaje.validarNombres(entryApellido, page)])
         entryApellido.value = datosLiderCalle.datos()[1]
@@ -1120,7 +1106,7 @@ class editarDatosLiderCalle:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosLiderCalle.validarApellidoLi(page, entryApellido, alertEditApellido)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, entryApellido, alertEditApellido, 4, consulta.actualizarApellidoLider, slider, editarDatosLiderCalle.cargarDatosLider, mensaje.apellidoEditadoFinal, False)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido))
                     ]
                 )
@@ -1131,22 +1117,6 @@ class editarDatosLiderCalle:
         alertEditApellido.open = True
 
         page.update()
-
-    def validarApellidoLi(page, widget, alertEditApellido):
-        if (widget.value == "") or (len(widget.value) in range(1, 4)):
-            if widget.value == "":
-                widget.error_text = mensaje.campoFaltante
-                page.update()
-            if len(widget.value) in range(1, 4):
-                widget.error_text = mensaje.minimoCaracteres(4)
-                page.update()
-        else:
-            db.actualizarApellidoLider(widget.value, mensaje.datosUsuarioLista[0][0])
-            editarDatosLiderCalle.cargarDatosLider(page)
-            mensaje.cerrarAlert(page, alertEditApellido)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El apellido se modifico correctamente"))
-            page.snack_bar.open = True
-            page.update()
 
     #SECCION TELEFONO
     def editTelefonoLi(page):
@@ -1177,7 +1147,7 @@ class editarDatosLiderCalle:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosLiderCalle.validarTelefonoLi(page, selectTipoTelefono, entryTelefono, alertEditTelefono)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, selectTipoTelefono, entryTelefono, alertEditTelefono,  mensaje.telefonoInvalido, consulta.verificarTelefonoLider, mensaje.telefonoRegistrado, consulta.actualizarTelefonoLider, editarDatosLiderCalle.cargarDatosLider, mensaje.telefonoGuardado, 7, True)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono))
                     ]
                 )
@@ -1188,32 +1158,6 @@ class editarDatosLiderCalle:
         alertEditTelefono.open = True
 
         page.update()
-
-    def validarTelefonoLi(page, codigo, telefono, alertEditTelefono):
-
-        arregloTelefono = f"{codigo.value}-{telefono.value}"
-
-        if (telefono.value == "") or (len(telefono.value) in range(1, 7)):
-            if telefono.value == "":
-                telefono.error_text = mensaje.campoFaltante
-                page.update()
-
-            if len(telefono.value) in range(1, 7):
-                telefono.error_text = "numero de telefono invalido"
-                page.update()
-
-        elif db.verificarTelefonoLider(arregloTelefono):
-            page.snack_bar = SnackBar(content=Text("Esta numero de telefono ya esta registrada"))
-            page.snack_bar.open = True
-            page.update()
-        
-        else:
-            db.actualizarTelefonoLider(arregloTelefono, mensaje.datosUsuarioLista[0][0])
-            editarDatosLiderCalle.cargarDatosLider(page)
-            mensaje.cerrarAlert(page, alertEditTelefono)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El numero de telefono se modifico correctamente"))
-            page.snack_bar.open = True
-            page.update()
 
     #SECCION CORREO
     def editCorreoLi(page):
@@ -1251,7 +1195,7 @@ class editarDatosLiderCalle:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosLiderCalle.validarCorreoLi(page, selectTipoCorreo, entryCorreo, alertEditCorreo)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, selectTipoCorreo, entryCorreo, alertEditCorreo, mensaje.correoInvalido, consulta.verificarCorreoLider, mensaje.correoRegistrado, consulta.actualizarCorreoLider, editarDatosLiderCalle.cargarDatosLider, mensaje.correoGuardado, 3, False)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo))
                     ]
                 )
@@ -1272,13 +1216,13 @@ class editarDatosLiderCalle:
                 correo.error_text = mensaje.campoFaltante
                 page.update()
 
-        elif db.verificarCorreoLider(arregloCorreo):
+        elif db.consultaConRetorno(consulta.verificarCorreoLider, [arregloCorreo,]):
             page.snack_bar = SnackBar(content=Text("Esta correo ya esta registrado"))
             page.snack_bar.open = True
             page.update()
         
         else:
-            db.actualizarCorreoLider(arregloCorreo, mensaje.datosUsuarioLista[0][0])
+            db.consultaSinRetorno(consulta.actualizarCorreoLider, [arregloCorreo, mensaje.datosUsuarioLista[0][0]])
             editarDatosLiderCalle.cargarDatosLider(page)
             mensaje.cerrarAlert(page, alertEditCorreo)
             page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El correo se modifico correctamente"))

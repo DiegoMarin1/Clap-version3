@@ -1,5 +1,6 @@
 from datetime import datetime
 from controlador.conexion import db
+from modelo.consultas import consulta
 import pathlib
 
 class mensaje:
@@ -51,9 +52,26 @@ class mensaje:
     mensajeSinJefesFamilia = "No tienes a ningun Jefe de Familia resgistrado, pusla agregar para añadir a los jefes familiares"
     cantidadCilindros = "Cantidad de cilindros"
 
+    #LIDER POLITICO
+    anadirNuevaEmpresa = "Añade una nueva empresa"
+    anadirNuevoPico = "Añade un nuevo tipo de pico"
+    anadidoEmpresa = "La empresa se guardo correctamente"
+    empresaDuplicada = "Esta Empresa ya esta registrada"
+    picoDuplicado = "Esta Tamaño ya esta registrada"
+    anadidoPico = "El nuevo tipo de pico se guardo correctamente"
+    nombreEditadoFinal = "El nombre se modifico correctamente"
+    apellidoEditadoFinal = "El apellido se modifico correctamente"
+    telefonoInvalido = "numero de telefono invalido"
+    telefonoRegistrado = "Esta numero de telefono ya esta registrado"
+    telefonoGuardado = "El numero de telefono se modifico correctamente"
+    correoRegistrado = "Esta correo ya esta registrado"
+    correoInvalido = "Correo invalido, muy corto"
+    correoGuardado = "El correo se modifico correctamente"
+
+
     def salir(page, indicator):
         fechaS = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-        db.guardarSalidaBitacora(fechaS, mensaje.datosUsuarioLista[0][5], mensaje.datosUsuarioLista[0][4])
+        db.consultaSinRetorno(consulta.guardarSalidaBitacora, [fechaS, mensaje.datosUsuarioLista[0][5], mensaje.datosUsuarioLista[0][4]])
         page.go("/")
         mensaje.cambiarPagina(indicator, 5.5)
         mensaje.datosUsuarioLista.clear()

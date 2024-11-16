@@ -7,7 +7,7 @@ from controlador.mensajes import mensaje
 from gestores.gestorRegister import *
 from gestores.gestorRegister import gestionRegister
 
-from controlador.mensajes import *
+from controlador.mensajes import mensaje
 
 #EL ESTATUS 1 ES HABILITADO
 #EL ESTATUS 2 ES INHABILITADO

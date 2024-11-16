@@ -8,6 +8,7 @@ from gestores.gestorLogin import gestionLogin
 from controlador.mensajes import mensaje
 from controlador.rutas import rutas
 from controlador.conexion import db
+from modelo.consultas import consulta
 
 class login:
     def __init__(self):
@@ -20,7 +21,7 @@ class login:
             if e.data == "close":
                 if bool(mensaje.datosUsuarioLista) == True:
                     fechaS = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-                    db.guardarSalidaBitacora(fechaS, mensaje.datosUsuarioLista[0][5], mensaje.datosUsuarioLista[0][4])
+                    db.consultaSinRetorno(consulta.guardarSalidaBitacora, [fechaS, mensaje.datosUsuarioLista[0][5], mensaje.datosUsuarioLista[0][4]])
                     page.window.destroy()
                 else:
                     page.window.destroy()

@@ -286,7 +286,7 @@ class liderPolitico:
                                             controls=[
                                                 Text("Nombre:"),
                                                 self.nombreLi,
-                                                IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: editarDatosUsuario.editNombreLi(page))
+                                                IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: editarDatosUsuario.editNombreLi(page, self.textoSlider))
                                             ]
                                         ),
                                         Row(
@@ -295,7 +295,7 @@ class liderPolitico:
                                             controls=[
                                                 Text("Apellido:"),
                                                 self.apellidoLi,
-                                                IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: editarDatosUsuario.editApellidoLi(page))
+                                                IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: editarDatosUsuario.editApellidoLi(page, self.slider))
                                             ]
                                         ),
                                         Row(
@@ -592,8 +592,9 @@ class liderPolitico:
                 spacing=30,
                 horizontal_alignment=CrossAxisAlignment.CENTER,
                 controls=[
-                    ElevatedButton("Agregar nueva Empresa", on_click=lambda _: caracteristicasCilindro.nuevaEmpresa(page)),
-                    ElevatedButton("Agregar nuevo Pico", on_click=lambda _: caracteristicasCilindro.nuevoPico(page))            
+#                    ElevatedButton("Agregar nueva Empresa", on_click=lambda _: caracteristicasCilindro.nuevaEmpresa(page)),
+                    ElevatedButton("Agregar nueva Empresa", on_click=lambda _: caracteristicasCilindro.nuevaCaracteristica(page, mensaje.anadirNuevaEmpresa, self.entryEmpresa, caracteristicasCilindro.ValidarNuevaCaracteristica, consulta.verificarEmpresa, mensaje.empresaDuplicada, mensaje.anadidoEmpresa)),
+                    ElevatedButton("Agregar nuevo Pico", on_click=lambda _: caracteristicasCilindro.nuevaCaracteristica(page, mensaje.anadirNuevoPico, self.entryPico, caracteristicasCilindro.ValidarNuevaCaracteristica, consulta.verificarPico, mensaje.picoDuplicado, mensaje.anadidoPico))            
                 ]
             )
         )
@@ -642,5 +643,5 @@ class liderPolitico:
         self.pregunta, self.respuesta, self.ubicacion, self.telefono, self.correo, self.columnaCards, 
         self.titulo, self.contenedorInicio, self.contenedorHistorial, self.formularioBitacora, self.formularioLiderCalle, self.contenedorBombonas, 
         self.contenedorPerfil, self.listaBitacora, self.nombreLi, self.apellidoLi, self.cedulaLi, self.ubicacionLi, 
-        self.telefonoLi, self.correoLi, self.preguntaP, self.respuestaP, self.usuarioP, self.contrasenaP, self.textoSlider, 
-        self.tablaLlenarHistorial, self.tablaSeleccionarHistorial, self.check, self.btnCandado, self.btnCandadoP, self.entryEmpresa, self.entryPico)
+        self.telefonoLi, self.correoLi, self.preguntaP, self.respuestaP, self.usuarioP, self.contrasenaP, 
+        self.tablaLlenarHistorial, self.tablaSeleccionarHistorial, self.check, self.btnCandado, self.btnCandadoP)

@@ -2,7 +2,9 @@ from flet import ScrollMode, Container, Text, SnackBar, Dropdown, dropdown, alig
 from controlador.conexion import db
 from controlador.rutas import rutas
 from controlador.mensajes import mensaje
-from modelo.modelPrincipal import *
+from modelo.modelPrincipal import * 
+from modelo.consultas import consulta
+
 import modelo.reporte
 from modelo.reporte import *
 from modelo.modelLiderPolitico import UsuarioSistema
@@ -55,7 +57,6 @@ class gestionPrincipal:
     respuestaP = None
     usuarioP = None
     contrasenaP = None
-    textoSlider = None
     tablaLlenarHistorial = None
     tablaSeleccionarHistorial = None
 
@@ -63,14 +64,10 @@ class gestionPrincipal:
     btnCandado = None
     btnCandadoP = None
 
-    entryEmpresa = None
-    entryPico = None
-
     def obtenerWidget(formulario, nombre, apellido, cedula, estatus, contrasena, usuario, pregunta, respuesta, ubicacion, telefono, correo, 
     columnaCards, titulo, contenedorInicio, contenedorHistorial ,formularioBitacora, formularioLiderCalle, 
     contenedorBombonas, contenedorPerfil, listaBitacora, nombreLi, apellidoLi, cedulaLi, ubicacionLi, telefonoLi, correoLi, 
-    preguntaP, respuestaP, usuarioP, contrasenaP, textoSlider, tablaLlenarHistorial, tablaSeleccionarHistorial, check, btnCandado, btnCandadoP, 
-    entryEmpresa, entryPico):
+    preguntaP, respuestaP, usuarioP, contrasenaP, tablaLlenarHistorial, tablaSeleccionarHistorial, check, btnCandado, btnCandadoP, ):
 
         gestionPrincipal.formulario = formulario
         gestionPrincipal.nombre = nombre
@@ -105,14 +102,11 @@ class gestionPrincipal:
         gestionPrincipal.respuestaP = respuestaP
         gestionPrincipal.usuarioP = usuarioP
         gestionPrincipal.contrasenaP = contrasenaP
-        gestionPrincipal.textoSlider = textoSlider
         gestionPrincipal.tablaLlenarHistorial = tablaLlenarHistorial
         gestionPrincipal.tablaSeleccionarHistorial = tablaSeleccionarHistorial
         gestionPrincipal.check = check
         gestionPrincipal.btnCandado = btnCandado
         gestionPrincipal.btnCandadoP = btnCandadoP
-        gestionPrincipal.entryEmpresa = entryEmpresa
-        gestionPrincipal.entryPico = entryPico
 
     def volverLogin(page, indicator):
         gestionPrincipal.columnaCards.controls.clear()
@@ -129,7 +123,7 @@ class generarCartas:
         page.update()
 
     def generarCards(page):
-        resultado = db.obtenerTodosUsuarios()
+        resultado = db.consultaConRetorno(consulta.obtenerTodosUsuarios)
 
         for nom, ape, ci, ids in resultado:
             gestionPrincipal.cartas.append(
@@ -156,7 +150,7 @@ class generarCartas:
 class formularioUsuarioLiderCalle:
     def generarJefe(ids, page):
         global datosUsuarioLiderCalle
-        resultadoUsuario = db.obtenerDatosUsuarioLideresCalle(ids)
+        resultadoUsuario = db.consultaConRetorno(consulta.obtenerDatosUsuarioLideresCalle, [ids,])
         datosUsuarioLiderCalle = UsuarioSistema(resultadoUsuario[0][0], resultadoUsuario[0][1], resultadoUsuario[0][2], resultadoUsuario[0][3], resultadoUsuario[0][4], resultadoUsuario[0][5], resultadoUsuario[0][6], resultadoUsuario[0][7], resultadoUsuario[0][8], resultadoUsuario[0][9])
 
         gestionPrincipal.nombre.value = f"{resultadoUsuario[0][0]}"
@@ -205,18 +199,18 @@ class bloqueoUsuario:
         if gestionPrincipal.estatus.value == "Habilitado":
             gestionPrincipal.check.value = True
             gestionPrincipal.estatus.value = "Inhabilitado"
-            db.actualizarEstatusUsuario(2, gestionPrincipal.usuario.value)
+            db.consultaSinRetorno(consulta.actualizarEstatusUsuario, [2, gestionPrincipal.usuario.value])
         else:
             gestionPrincipal.check.value = False
             gestionPrincipal.estatus.value = "Habilitado"
-            db.actualizarEstatusUsuario(1, gestionPrincipal.usuario.value)
+            db.consultaSinRetorno(consulta.actualizarEstatusUsuario, [1, gestionPrincipal.usuario.value])
 
         page.update()
 
 #PARA AGREGAR NUEVAS EMPRESAS O TIPOS DE PICOS A LOS CILINDROS
 class caracteristicasCilindro:
-    def nuevaEmpresa(page):
-        alertNuevaEmpresa = AlertDialog(
+    def nuevaCaracteristica(page, texto, caracteristica, metodoValidar, query, avisoDuplicado, mensajeExito):
+        alertNuevaCaracteristica = AlertDialog(
             content=Container(
                 alignment=alignment.center,
                 height=150,
@@ -226,8 +220,8 @@ class caracteristicasCilindro:
                     horizontal_alignment=CrossAxisAlignment.CENTER,
                     spacing=10,
                     controls=[
-                        Text("Añade una nueva empresa"),
-                        gestionPrincipal.entryEmpresa,
+                        Text(texto),
+                        caracteristica,
                     ]
                 )
             ),
@@ -235,96 +229,42 @@ class caracteristicasCilindro:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar", on_click=lambda _:caracteristicasCilindro.ValidarEmpresa(page, alertNuevaEmpresa)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertNuevaEmpresa))
+                        ElevatedButton("Guardar", on_click=lambda _:metodoValidar(page, alertNuevaCaracteristica, caracteristica, query, avisoDuplicado, mensajeExito)),
+                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertNuevaCaracteristica))
                     ]
                 )
             ]
         )
 
-        page.dialog = alertNuevaEmpresa
-        alertNuevaEmpresa.open = True
+        page.dialog = alertNuevaCaracteristica
+        alertNuevaCaracteristica.open = True
 
         page.update()
-    
-    def ValidarEmpresa(page, alertNuevaEmpresa):
 
-        if (gestionPrincipal.entryEmpresa.value == "") or (len(gestionPrincipal.entryEmpresa.value) in range(1, 3)):
-            if gestionPrincipal.entryEmpresa.value == "":
-                gestionPrincipal.entryEmpresa.error_text = mensaje.campoFaltante
+    def ValidarNuevaCaracteristica(page, alertNuevaEmpresa, caracteristica, query, avisoDuplicado, mensajeExito):
+
+        if (caracteristica.value == "") or (len(caracteristica.value) in range(1, 3)):
+            if caracteristica.value == "":
+                caracteristica.error_text = mensaje.campoFaltante
                 page.update()
-            if len(gestionPrincipal.entryEmpresa.value) in range(1, 3):
-                gestionPrincipal.entryEmpresa.error_text = mensaje.minimoCaracteres(3)
+            if len(caracteristica.value) in range(1, 3):
+                caracteristica.error_text = mensaje.minimoCaracteres(3)
                 page.update()
-        elif db.verificarEmpresa(gestionPrincipal.entryEmpresa.value):
-            page.snack_bar = SnackBar(content=Text("Esta Empresa ya esta registrada"))
+        elif db.consultaConRetorno(query, [caracteristica.value,]):
+            page.snack_bar = SnackBar(content=Text(avisoDuplicado))
             page.snack_bar.open = True
             page.update()
         else:
-            db.guardarEmpresaNueva(gestionPrincipal.entryEmpresa.value)
+            db.consultaSinRetorno(consulta.guardarEmpresaNueva, [caracteristica.value,])
             mensaje.cerrarAlert(page, alertNuevaEmpresa)
-            gestionPrincipal.entryEmpresa.value = ""
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("La empresa se guardo correctamente"))
-            page.snack_bar.open = True
-            page.update()
-
-    def nuevoPico(page):
-
-        alertNuevaPico = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Column(
-                    horizontal_alignment=CrossAxisAlignment.CENTER,
-                    spacing=10,
-                    controls=[
-                        Text("Añade un nuevo tipo de pico"),
-                        gestionPrincipal.entryPico,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar", on_click=lambda _:caracteristicasCilindro.ValidarPico(page, alertNuevaPico)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertNuevaPico))
-                    ]
-                )
-            ]
-        )
-
-        page.dialog = alertNuevaPico
-        alertNuevaPico.open = True
-
-        page.update()
-
-    def ValidarPico(page, alertNuevaPico):
-
-        if (gestionPrincipal.entryPico.value == "") or (len(gestionPrincipal.entryPico.value) in range(1, 3)):
-            if gestionPrincipal.entryPico.value == "":
-                gestionPrincipal.entryPico.error_text = mensaje.campoFaltante
-                page.update()
-            if len(gestionPrincipal.entryPico.value) in range(1, 3):
-                gestionPrincipal.entryPico.error_text = mensaje.minimoCaracteres(3)
-                page.update()
-        elif db.verificarPico(gestionPrincipal.entryPico.value):
-            page.snack_bar = SnackBar(content=Text("Esta Tamaño ya esta registrada"))
-            page.snack_bar.open = True
-            page.update()
-        else:
-            db.guardarPicoNuevo(gestionPrincipal.entryPico.value)
-            mensaje.cerrarAlert(page, alertNuevaPico)
-            gestionPrincipal.entryPico.value = ""
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El nuevo tipo de pico se guardo correctamente"))
+            caracteristica.value = ""
+            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text(mensajeExito))
             page.snack_bar.open = True
             page.update()
 
 class bitacora:
     def volverGenerarBitacora(page, ci):
-        resultadoBitacora = db.extraerBitacora(ci.value)
+        resultadoBitacora = db.consultaConRetorno(consulta.extraerBitacora, [ci.value,])
 
         for entrada, salida in resultadoBitacora:
             gestionPrincipal.listaBitacora.controls.append(Text(f"Entrada: {entrada}     Salida : {salida}"))
@@ -386,17 +326,18 @@ class preciosCilindros:
             else:
                 return
         else:
-            db.actualizarPrecios(PrecioPequeña.value, 1)
-            db.actualizarPrecios(PrecioMediana.value, 2)
-            db.actualizarPrecios(PrecioRegular.value, 3)
-            db.actualizarPrecios(PrecioGrande.value, 4)
+            contador = 0
+            for precio in (PrecioPequeña, PrecioMediana, PrecioRegular, PrecioGrande):
+                contador = contador + 1
+                db.consultaSinRetorno(consulta.actualizarPrecios, [precio.value, contador])
+
             mensaje.cerrarAlert(page, alertJornada)
             page.snack_bar = SnackBar(content=Text("Precios Actualizados Correctamente"), bgcolor="GREEN")
             page.snack_bar.open = True
             page.update()
 
 class editarDatosUsuario:
-    def editNombreLi(page):
+    def editNombreLi(page, slider):
         entryNombre = TextField(label="Nombre", hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), mensaje.validarNombres(entryNombre, page)])
         entryNombre.value = gestionPrincipal.nombreLi.value
 
@@ -417,7 +358,7 @@ class editarDatosUsuario:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarNombreLi(page, entryNombre, alertEditNombre)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, entryNombre, alertEditNombre, 3, consulta.actualizarNombreLider, slider, datosUsuario.volverCargarTusDatos, mensaje.nombreEditadoFinal, True)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre))
                     ]
                 )
@@ -429,23 +370,7 @@ class editarDatosUsuario:
 
         page.update()
 
-    def validarNombreLi(page, widget, alertEditNombre):
-        if (widget.value == "") or (len(widget.value) in range(1, 3)):
-            if widget.value == "":
-                widget.error_text = mensaje.campofaltante
-            if len(widget.value) in range(1, 3):
-                widget.error_text = mensaje.minimoCaracteres(3)
-                page.update()
-        else:
-            db.actualizarNombreLider(widget.value, mensaje.datosUsuarioLista[0][0])
-            gestionPrincipal.textoSlider.value = f"{widget.value}"
-            datosUsuario.volverCargarTusDatos(page)
-            mensaje.cerrarAlert(page, alertEditNombre)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El nombre se modifico correctamente"))
-            page.snack_bar.open = True
-            page.update()
-
-    def editApellidoLi(page):
+    def editApellidoLi(page, slider):
 
         entryApellido = TextField(label="Apellido", hint_text="Minimo 4 caracteres", max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), mensaje.validarNombres(entryApellido, page)])
         entryApellido.value = gestionPrincipal.apellidoLi.value
@@ -467,7 +392,7 @@ class editarDatosUsuario:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarApellidoLi(page, entryApellido, alertEditApellido)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, entryApellido, alertEditApellido, 4, consulta.actualizarApellidoLider, slider, datosUsuario.volverCargarTusDatos, mensaje.apellidoEditadoFinal, False)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido))
                     ]
                 )
@@ -479,19 +404,20 @@ class editarDatosUsuario:
 
         page.update()
 
-    def validarApellidoLi(page, widget, alertEditApellido):
-        if (widget.value == "") or (len(widget.value) in range(1, 4)):
+    def ValidarEdicionSencilla(page, widget, alertEdicion, rango, query, Slider, funcion, mensajeFinal, condicion):
+        if (widget.value == "") or (len(widget.value) in range(1, rango)):
             if widget.value == "":
-                widget.error_text = mensaje.campoFaltante
-                page.update()
-            if len(widget.value) in range(1, 4):
-                widget.error_text = "Minimo de caracteres 4"
+                widget.error_text = mensaje.campofaltante
+            if len(widget.value) in range(1, rango):
+                widget.error_text = mensaje.minimoCaracteres(rango)
                 page.update()
         else:
-            db.actualizarApellidoLider(widget.value, mensaje.datosUsuarioLista[0][0])
-            datosUsuario.volverCargarTusDatos(page)
-            mensaje.cerrarAlert(page, alertEditApellido)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El apellido se modifico correctamente"))
+            db.consultaSinRetorno(query, [widget.value, mensaje.datosUsuarioLista[0][0]])
+            if condicion == True:
+                Slider.value = f"{widget.value}"
+            funcion(page)
+            mensaje.cerrarAlert(page, alertEdicion)
+            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text(mensajeFinal))
             page.snack_bar.open = True
             page.update()
 
@@ -523,7 +449,7 @@ class editarDatosUsuario:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarTelefonoLi(page, selectTipoTelefono, entryTelefono, alertEditTelefono)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, selectTipoTelefono, entryTelefono, alertEditTelefono, mensaje.telefonoInvalido, consulta.verificarTelefonoLider, mensaje.telefonoRegistrado, consulta.actualizarTelefonoLider, datosUsuario.volverCargarTusDatos, mensaje.telefonoGuardado, 7, True)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono))
                     ]
                 )
@@ -534,32 +460,6 @@ class editarDatosUsuario:
         alertEditTelefono.open = True
 
         page.update()
-
-    def validarTelefonoLi(page, codigo, telefono, alertEditTelefono):
-
-        arregloTelefono = f"{codigo.value}-{telefono.value}"
-
-        if (telefono.value == "") or (len(telefono.value) in range(1, 7)):
-            if telefono.value == "":
-                telefono.error_text = mensaje.campoFaltante
-                page.update()
-
-            if len(telefono.value) in range(1, 7):
-                telefono.error_text = "numero de telefono invalido"
-                page.update()
-
-        elif db.verificarTelefonoLider(arregloTelefono):
-            page.snack_bar = SnackBar(content=Text("Esta numero de telefono ya esta registrada"))
-            page.snack_bar.open = True
-            page.update()
-        
-        else:
-            db.actualizarTelefonoLider(arregloTelefono, mensaje.datosUsuarioLista[0][0])
-            datosUsuario.volverCargarTusDatos(page)
-            mensaje.cerrarAlert(page, alertEditTelefono)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El numero de telefono se modifico correctamente"))
-            page.snack_bar.open = True
-            page.update()
 
     #SECCION CORREO
     def editCorreoLi(page):
@@ -597,7 +497,7 @@ class editarDatosUsuario:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarCorreoLi(page, selectTipoCorreo, entryCorreo, alertEditCorreo)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, selectTipoCorreo, entryCorreo, alertEditCorreo, mensaje.correoInvalido, consulta.verificarCorreoLider, mensaje.correoRegistrado, consulta.actualizarCorreoLider, datosUsuario.volverCargarTusDatos, mensaje.correoGuardado, 3, False)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo))
                     ]
                 )
@@ -609,25 +509,33 @@ class editarDatosUsuario:
 
         page.update()
 
-    def validarCorreoLi(page, tipo, correo, alertEditCorreo):
+    def validarEdicionCompleja(page, campo1, campo2, alertEdicion, mensajeInvalido, query, mensajeRepetido, queryGuardar, funcion, mensajeFinal, rango, condicion):
+        #TRUE PARA TELEFONO
+        if condicion == True:
+            arreglo = f"{campo1.value}-{campo2.value}"
+        #FALSE PARA CORREO
+        if condicion == False:
+            arreglo = f"{campo2.value}{campo1.value}"
 
-        arregloCorreo = f"{correo.value}{tipo.value}"
-
-        if (correo.value == ""):
-            if correo.value == "":
-                correo.error_text = mensaje.campoFaltante
+        if (campo2.value == "") or (len(campo2.value) in range(1, rango)):
+            if campo2.value == "":
+                campo2.error_text = mensaje.campoFaltante
                 page.update()
 
-        elif db.verificarCorreoLider(arregloCorreo):
-            page.snack_bar = SnackBar(content=Text("Esta correo ya esta registrado"))
+            if len(campo2.value) in range(1, rango):
+                campo2.error_text = mensajeInvalido
+                page.update()
+
+        elif db.consultaConRetorno(query, [arreglo,]):
+            page.snack_bar = SnackBar(content=Text(mensajeRepetido))
             page.snack_bar.open = True
             page.update()
-
+        
         else:
-            db.actualizarCorreoLider(arregloCorreo, mensaje.datosUsuarioLista[0][0])
-            datosUsuario.volverCargarTusDatos(page)
-            mensaje.cerrarAlert(page, alertEditCorreo)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El correo se modifico correctamente"))
+            db.consultaSinRetorno(queryGuardar, [arreglo, mensaje.datosUsuarioLista[0][0]])
+            funcion(page)
+            mensaje.cerrarAlert(page, alertEdicion)
+            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text(mensajeFinal))
             page.snack_bar.open = True
             page.update()
 
@@ -668,7 +576,7 @@ class historial:
 
     #EXTRAER DE DATOS EL CONTENEDOR DEL HISTORIAL
     def llenarHistroial(page, ids):
-        resultado = db.obtenerHistorial(ids)
+        resultado = db.consultaConRetorno(consulta.obtenerHistorial, [ids,])
 
         for idss, cii, nom, ape, empresa, tamano, pico , fecha in resultado:
             gestionPrincipal.contenido.append(DataRow(
@@ -702,11 +610,11 @@ class archivos:
     def generarArchivos(page):
         coun = 1
 
-        resultadoId = db.obtenerArchivosId(gestionPrincipal.cedula.value)
+        resultadoId = db.consultaConRetorno(consulta.obtenerArchivosId, [gestionPrincipal.cedula.value,])
 
         for idss in resultadoId:
 
-            datos = db.obtenerFechasJornadas(idss[0])
+            datos = db.consultaConRetorno(consulta.obtenerFechasJornadas, [idss[0],])
 
             gestionPrincipal.bitacoraLista.append([datos[0][0], datos[0][1]])
 
@@ -728,7 +636,7 @@ class archivos:
 
     def descargarArchivo(page, alertt, ids):
 
-        origen = db.origenRutaArchivo(ids)
+        origen = db.consultaConRetorno(consulta.origenRutaArchivo, [ids,])
         destino = os.path.join(os.path.join(os.environ['USERPROFILE']), rf'Desktop\Reportes')
 
         rutaEscritorio = os.path.join(os.path.join(os.environ['USERPROFILE']), rf'Desktop\Reportes')
@@ -749,7 +657,7 @@ class archivos:
 class datosUsuario:
     def volverCargarTusDatos(page):
 
-        resultadoUsuario = db.obtenerDatosLiderPolitico(mensaje.datosUsuarioLista[0][0])
+        resultadoUsuario = db.consultaConRetorno(consulta.obtenerDatosLiderPolitico, [mensaje.datosUsuarioLista[0][0],])
 
         gestionPrincipal.nombreLi.value = f"{resultadoUsuario[0][0]}"
         gestionPrincipal.apellidoLi.value = f"{resultadoUsuario[0][1]}"

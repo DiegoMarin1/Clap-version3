@@ -4,6 +4,7 @@ from datetime import datetime
 from controlador.conexion import db
 from controlador.mensajes import mensaje
 from controlador.rutas import rutas
+from modelo.consultas import consulta
 import pathlib
 
 import os
@@ -17,7 +18,7 @@ class Pdf(FPDF):
 
         self.idPedidos = []
         self.idPedidos.clear()
-        resultadoPrecios = db.obtenerCostosCilindros()
+        resultadoPrecios = db.consultaConRetorno(consulta.obtenerCostosCilindros)
         
         #------------------Definir tipo de hoja----------------
         self.pdf = FPDF(orientation="P", unit="mm", format="A4")
@@ -74,7 +75,7 @@ class Pdf(FPDF):
         totalG = 0
         totalR = 0
 
-        self.informacion = db.obtenerJornadaArchivo(mensaje.datosUsuarioLista[0][0])
+        self.informacion = db.consultaConRetorno(consulta.obtenerJornadaArchivo, [mensaje.datosUsuarioLista[0][0],])
         
         #-----------------------------Cliclo For-----------------------------------------
         for ids, ci, nom, ape, emp, pic, tamn, cos, fech in self.informacion:
@@ -138,10 +139,10 @@ class Pdf(FPDF):
         self.pdf.output(rf'{rutaActual}\Reportes\{nombreArchivo}')
         self.pdf.output(rf'{rutaEscritorio}\{nombreArchivo}')
 
-        db.guardarRutasArchivos(rf'{rutaActual}\Reportes\{nombreArchivo}', self.fecha)
-        resultadoIdArchivo = db.obtenerIdArchivo(rf"{rutaActual}\Reportes\{nombreArchivo}", self.fecha)
+        db.consultaSinRetorno(consulta.guardarRutasArchivos, [rf'{rutaActual}\Reportes\{nombreArchivo}', self.fecha])
+        resultadoIdArchivo = db.consultaConRetorno(consulta.obtenerIdArchivo, [rf"{rutaActual}\Reportes\{nombreArchivo}", self.fecha])
 
         
         for i in self.idPedidos:
-            db.asignarIdArchivo(resultadoIdArchivo[0][0], i)
+            db.consultaSinRetorno(consulta.asignarIdArchivo, [resultadoIdArchivo[0][0], i])
         self.idPedidos.clear()

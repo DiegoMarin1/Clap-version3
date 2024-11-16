@@ -4,7 +4,7 @@ from flet import View, AnimatedSwitcher, AnimatedSwitcherTransition, ScrollMode,
 from flet_route import Params, Basket
 from datetime import datetime
 from time import sleep
-#
+
 import os
 import pathlib
 import shutil
@@ -509,7 +509,7 @@ class principal:
                                     controls=[
                                         Text("Nombre:"),
                                         self.nombreLi,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: editarDatosLiderCalle.editNombreLi(page))
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: editarDatosLiderCalle.editNombreLi(page, self.textoSlider))
                                     ]
                                 ),
                                 Row(
@@ -518,7 +518,7 @@ class principal:
                                     controls=[
                                         Text("Apellido:"),
                                         self.apellidoLi,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: editarDatosLiderCalle.editApellidoLi(page))
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: editarDatosLiderCalle.editApellidoLi(page, self.textoSlider))
                                     ]
                                 ),
                                 Row(

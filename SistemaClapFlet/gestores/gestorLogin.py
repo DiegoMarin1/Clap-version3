@@ -13,7 +13,7 @@ class gestionLogin:
 
     def camposVacios(page, usuario, contrasena):
 
-        try:
+       
             if (usuario.value == "") or (contrasena.value == ""):
                 if usuario.value == "":
                     usuario.error_text = mensaje.campoFaltante
@@ -26,21 +26,19 @@ class gestionLogin:
             else:
                 gestionLogin.acceso(page, usuario, contrasena)
 
-        except:
-            print("Ocurrio un error")
-            
+        
     def acceso(page, usuario, contrasena):
         
         #SE HACE LA CONSULTA
-        resultado = db.accesoSistema(usuario.value, contrasena.value)
-        resultadoBloqueoUser = db.bloqueoUser(usuario.value)
-        resultadoBloqueoContra = db.bloqueoContra(usuario.value, contrasena.value)
+        resultado = db.consultaConRetorno(consulta.nivelUser, [usuario.value, contrasena.value])
+        resultadoBloqueoUser = db.consultaConRetorno(consulta.bloqueoUser, [usuario.value,])
+        resultadoBloqueoContra = db.consultaConRetorno(consulta.bloqueoContra, [contrasena.value, usuario.value])
 
         #SUMAR INTENTO DE BLOQUEO
         if (bool(resultadoBloqueoUser) == True) and (bool(resultadoBloqueoContra) == False): gestionLogin.bloqueoUsuario(page, usuario)
 
         #DENEGAR ACCESO A USURIAOS BLOQUEADOS
-        elif db.denegarAccesoUsuarioBloquado(usuario.value):
+        elif db.consultaConRetorno(consulta.userBloqueado, [usuario.value,]):
             page.snack_bar = SnackBar(content=Text(mensaje.usuarioBloqueado), bgcolor="RED")
             page.snack_bar.open = True
             page.update()
@@ -55,7 +53,7 @@ class gestionLogin:
             if resultado[0][0] == 2:    
                 rutas.enrutamiento(page, rutas.routePrincipal)
             
-            db.guardarEntradaBitacora(fechaE, idUsuario)
+            db.consultaSinRetorno(consulta.guardarEntradaBitacora, [fechaE, idUsuario])
             gestionLogin.intentos = 0
 
         else:
@@ -66,7 +64,7 @@ class gestionLogin:
     def bloqueoUsuario(page, usuario):
         
         if gestionLogin.intentos == 3:
-            db.bloquearUsuario(usuario.value)
+            db.consultaSinRetorno(consulta.bloquearUsuario, [usuario.value,])
             gestionLogin.intentos = 0
             page.snack_bar = SnackBar(content=Text(mensaje.bloqueado), bgcolor="RED")
             page.snack_bar.open = True
@@ -78,5 +76,5 @@ class gestionLogin:
             page.update()
 
     def datosUsuario(usuario, fecha):    
-        for ids, nom, ape, ubi, userId in db.obtenerDatosUsuario(usuario):
+        for ids, nom, ape, ubi, userId in db.consultaConRetorno(consulta.obtenerDatosUsuario, [usuario,]):
             mensaje.datosUsuarioLista.append([ids, nom, ape, ubi, userId, fecha])

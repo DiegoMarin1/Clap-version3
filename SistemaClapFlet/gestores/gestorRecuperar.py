@@ -1,6 +1,7 @@
 from flet import SnackBar, Text, AlertDialog, dropdown
 from controlador.conexion import db
 from controlador.mensajes import mensaje
+from modelo.consultas import consulta
 from controlador.rutas import rutas
 
 class gestionRecuperar:
@@ -8,7 +9,7 @@ class gestionRecuperar:
     def formulario1(page, tipoCedula, cedula, widgetPregunta, formulario, contenedor1, contenedor2):
         arregloCedula = f"{tipoCedula.value}-{cedula.value}"
         
-        pregunta = db.verificarPreguntaRecuperar(arregloCedula)
+        pregunta = db.consultaConRetorno(consulta.verificarCedulaRecuperar, [arregloCedula,])
 
         if (cedula.value == "") or (len(cedula.value) in range (1,7)):
             if cedula.value == "":
@@ -16,7 +17,7 @@ class gestionRecuperar:
                 page.update()
             
             elif len(cedula.value) in range (1,7):
-                cedula.error_text = "Minimo de caracteres 7"
+                cedula.error_text = mensaje.minimoCaracteres(7)
                 page.update()
 
         elif pregunta:
@@ -31,8 +32,7 @@ class gestionRecuperar:
     #VALIDA LA SECCION 2 DE LA SECCION RECUPERAR DONDE SE PIDE LA RESPUESTA
     def formulario2(page, tipoCedula, cedula, respuesta, formulario, contenedor1, contenedor2):
         arregloCedulaa = f"{tipoCedula.value}-{cedula.value}"
-
-        resultadoRespuesta =  db.verificarRespuestaRecuperar(arregloCedulaa)
+        resultadoRespuesta =  db.consultaConRetorno(consulta.verificarRespuesta, [arregloCedulaa,])
 
         if respuesta.value == "":
             respuesta.error_text = mensaje.campoFaltante
@@ -54,24 +54,24 @@ class gestionRecuperar:
 
         if (contrasena.value == "") or (confirmar.value == "") or (len(contrasena.value) in range (1,6)):
             if contrasena.value == "":
-                contrasena.error_text = "Campo vacio, por favor rellenelo para continuar"
+                contrasena.error_text = mensaje.campoFaltante
                 page.update()
 
             if confirmar.value == "":
-                confirmar.error_text = "Campo vacio, por favor rellenelo para continuar"
+                confirmar.error_text = mensaje.campoFaltante
                 page.update()
 
             if len(contrasena.value) in range (1,6):
-                contrasena.error_text = "Minimo de caracteres 6"
+                contrasena.error_text = mensaje.minimoCaracteres(6)
                 page.update()
             
             else:
                 return
 
         elif contrasena.value == confirmar.value:
-            idUsuario = db.obtenerIdCedulaRecuperar(arregloCedula)
+            idUsuario = db.consultaConRetorno(consulta.obtenerIdCedulaRecuperar, [arregloCedula,])
             
-            db.guardarCambiosContrasena(contrasena.value, idUsuario[0][0])
+            db.consultaSinRetorno(consulta.guardarCambiosContrasena, [contrasena.value, idUsuario[0][0]])
 
             rutas.enrutamiento(page, rutas.routeLogin)
 

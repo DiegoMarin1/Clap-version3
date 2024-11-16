@@ -2,6 +2,7 @@ from flet import SnackBar, Text, AlertDialog, dropdown
 from controlador.conexion import db
 from controlador.mensajes import mensaje
 from controlador.rutas import rutas
+from modelo.consultas import consulta
 from modelo.modelRegister import Usuario, Lideres, Respuesta
 
 class gestionRegister:
@@ -40,22 +41,22 @@ class gestionRegister:
                 ubicacion.error_text = "Minimo de caracteres 3"
                 page.update()
             
-        elif db.verificarUbicacion(ubicacion.value):
+        elif db.consultaConRetorno(consulta.verficarUbicacion, [ubicacion.value,]):
             page.snack_bar = SnackBar(content=Text("Esta ubicacion ya esta en uso"))
             page.snack_bar.open = True
             page.update()
 
-        elif db.verificarCedula(arregloCedula):
+        elif db.consultaConRetorno(consulta.verficarCedula, [arregloCedula,]):
             page.snack_bar = SnackBar(content=Text("Esta cedula ya esta ligada a un usuario"))
             page.snack_bar.open = True
             page.update()
 
-        elif db.verificarTelefono(arregloTelefono):
+        elif db.consultaConRetorno(consulta.verficarNumero, [arregloTelefono,]):
             page.snack_bar = SnackBar(content=Text("Este numero de telefono ya esta asignado a un usuario"))
             page.snack_bar.open = True
             page.update()
 
-        elif db.verificarCorreo(arregloCorreo):
+        elif db.consultaConRetorno(consulta.verificarCorreo, [arregloCorreo,]):
             page.snack_bar = SnackBar(content=Text("Este correo ya esta en uso"))
             page.snack_bar.open = True
             page.update()
@@ -82,7 +83,7 @@ class gestionRegister:
                 contrasena.error_text = "Minimo de caracteres 6"
                 page.update()
         
-        elif db.verificarNombreUsuario(usuario.value):
+        elif db.consultaConRetorno(consulta.verificarNombreUsuario, [usuario.value,]):
             page.snack_bar = SnackBar(content=Text("Nombre de Usuario ya existente"))
             page.snack_bar.open = True
             page.update()
@@ -124,26 +125,26 @@ class gestionRegister:
     def guardarUsuario(page, mensaje):
         nivelUsuario = 2
         #OBTENER ID PREGUNTA
-        idPregunta = db.obtenerIdPregunta(nuevaRespuesta.datos()[1])
+        idPregunta = db.consultaConRetorno(consulta.obtenerIdPregunta, [nuevaRespuesta.datos()[1],])
 
         #GUARDAR LA RESPUESTA
-        db.guardarRespuesta(nuevaRespuesta.datos()[0], idPregunta[0][0])
+        db.consultaSinRetorno(consulta.guardarRespuesta, [nuevaRespuesta.datos()[0], idPregunta[0][0]])
 
         #OBTENER ID RESPUESTA
-        idRespuesta = db.obtenerIdRespuesta(idPregunta[0][0], nuevaRespuesta.datos()[0])
+        idRespuesta = db.consultaConRetorno(consulta.obtenerIdRespuesta, [idPregunta[0][0], nuevaRespuesta.datos()[0]])
 
         #GUARDAR DATOS DEL LIDER
-        db.guardarLider(nuevoLider.datos()[0], nuevoLider.datos()[1], nuevoLider.datos()[2], nuevoLider.datos()[3], nuevoLider.datos()[4], nuevoLider.datos()[5])
+        db.consultaSinRetorno(consulta.guardarLider, [nuevoLider.datos()[0], nuevoLider.datos()[1], nuevoLider.datos()[2], nuevoLider.datos()[3], nuevoLider.datos()[4], nuevoLider.datos()[5]])
 
         #OBTENER ID LIDER
-        idLider = db.obtenerIdLider(nuevoLider.datos()[2])
+        idLider = db.consultaConRetorno(consulta.obtenerIdLider, [nuevoLider.datos()[2]])
 
         #SACAR DATO NIVEL USUARIO
         if nuevoUsuario.datos()[2] == "Lider Politico":
             nivelUsuario = 1
 
         #INSERTAR DATOS USUARIO
-        db.guardarUsuario(nuevoUsuario.datos()[0], nuevoUsuario.datos()[1], idRespuesta[0][0], idLider[0][0], nivelUsuario)
+        db.consultaSinRetorno(consulta.guardarUsuario, [nuevoUsuario.datos()[0], nuevoUsuario.datos()[1], idRespuesta[0][0], idLider[0][0], nivelUsuario])
 
         rutas.enrutamiento(page, rutas.routeLogin)
 
@@ -158,6 +159,6 @@ class gestionRegister:
         rutas.animar(formulario, contenedor1, contenedor2, page)
 
     def llenarPreguntas(widget):
-        resultadoPreguntas = db.llenarPreguntas()
+        resultadoPreguntas = db.consultaConRetorno(consulta.llenarPreguntas)
         for mostrarPreguntas in resultadoPreguntas:
             widget.options.append(dropdown.Option(mostrarPreguntas[0]))
