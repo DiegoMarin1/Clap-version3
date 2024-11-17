@@ -1,7 +1,7 @@
 from flet import ScrollMode, Container, Text, SnackBar, Dropdown, dropdown, alignment, border_radius, border, TextCapitalization, TextField, CrossAxisAlignment, MainAxisAlignment, Column, FontWeight, TextButton, AlertDialog, padding, TextThemeStyle, DataRow, DataCell, Row, icons, IconButton, ElevatedButton
 from controlador.conexion import db
 from controlador.rutas import rutas
-from controlador.mensajes import mensaje
+from controlador.mensajes import mensaje, validaciones
 from modelo.modelPrincipal import * 
 from modelo.consultas import consulta
 
@@ -284,10 +284,10 @@ class bitacora:
 class preciosCilindros:
     def menuPrecios(page):
 
-        PrecioPequeña = TextField(label="Pequeña", hint_text="Ingresar precio", border_radius=30, border_color="#820000", width=150, height=60, on_change=lambda _:[mensaje.quitarError(page, PrecioPequeña), mensaje.validarNumeros(PrecioPequeña, page)])
-        PrecioMediana = TextField(label="Mediana", hint_text="Ingresar precio", border_radius=30, border_color="#820000", width=150, height=60, on_change=lambda _:[mensaje.quitarError(page, PrecioMediana), mensaje.validarNumeros(PrecioMediana, page)])
-        PrecioRegular = TextField(label="Regular", hint_text="Ingresar precio", border_radius=30, border_color="#820000", width=150, height=60, on_change=lambda _:[mensaje.quitarError(page, PrecioRegular), mensaje.validarNumeros(PrecioRegular, page)])
-        PrecioGrande = TextField(label="Grande", hint_text="Ingresar precio", border_radius=30, border_color="#820000", width=150, height=60, on_change=lambda _:[mensaje.quitarError(page, PrecioGrande), mensaje.validarNumeros(PrecioGrande, page)])
+        PrecioPequeña = TextField(label="Pequeña", hint_text="Ingresar precio", border_radius=30, border_color="#820000", width=150, height=60, on_change=lambda _:[mensaje.quitarError(page, PrecioPequeña), validaciones.validarCamposNot(PrecioPequeña, page, True, validaciones.condicionNumeros)])
+        PrecioMediana = TextField(label="Mediana", hint_text="Ingresar precio", border_radius=30, border_color="#820000", width=150, height=60, on_change=lambda _:[mensaje.quitarError(page, PrecioMediana), validaciones.validarCamposNot(PrecioMediana, page, True, validaciones.condicionNumeros)])
+        PrecioRegular = TextField(label="Regular", hint_text="Ingresar precio", border_radius=30, border_color="#820000", width=150, height=60, on_change=lambda _:[mensaje.quitarError(page, PrecioRegular), validaciones.validarCamposNot(PrecioRegular, page, True, validaciones.condicionNumeros)])
+        PrecioGrande = TextField(label="Grande", hint_text="Ingresar precio", border_radius=30, border_color="#820000", width=150, height=60, on_change=lambda _:[mensaje.quitarError(page, PrecioGrande), validaciones.validarCamposNot(PrecioGrande, page, True, validaciones.condicionNumeros)])
 
         alertJornada = AlertDialog(
             modal=True,
@@ -338,7 +338,7 @@ class preciosCilindros:
 
 class editarDatosUsuario:
     def editNombreLi(page, slider):
-        entryNombre = TextField(label="Nombre", hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), mensaje.validarNombres(entryNombre, page)])
+        entryNombre = TextField(label="Nombre", hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), validaciones.validarCamposNot(entryNombre, page, False, validaciones.condicionNombres)])
         entryNombre.value = gestionPrincipal.nombreLi.value
 
         alertEditNombre = AlertDialog(
@@ -372,7 +372,7 @@ class editarDatosUsuario:
 
     def editApellidoLi(page, slider):
 
-        entryApellido = TextField(label="Apellido", hint_text="Minimo 4 caracteres", max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), mensaje.validarNombres(entryApellido, page)])
+        entryApellido = TextField(label="Apellido", hint_text="Minimo 4 caracteres", max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), validaciones.validarCamposNot(entryApellido, page, False, validaciones.condicionNombres)])
         entryApellido.value = gestionPrincipal.apellidoLi.value
 
         alertEditApellido = AlertDialog(
@@ -428,7 +428,7 @@ class editarDatosUsuario:
         selectTipoTelefono = Dropdown(hint_text="Codigo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoTelefono), options=[
                 dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
         selectTipoTelefono.value = codigo
-        entryTelefono = TextField(label="N telefono", hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), mensaje.validarNumeros(entryTelefono, page)])
+        entryTelefono = TextField(label="N telefono", hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), validaciones.validarCamposNot(entryTelefono, page, True, validaciones.condicionNumeros)])
         entryTelefono.value = telefono
 
         alertEditTelefono = AlertDialog(
@@ -473,7 +473,7 @@ class editarDatosUsuario:
             direccion = gestionPrincipal.correoLi.value[:-12]
             tipo = gestionPrincipal.correoLi.value[-12:]
 
-        entryCorreo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, entryCorreo), mensaje.validarCorreo(entryCorreo, page)])
+        entryCorreo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, entryCorreo), validaciones.validarCamposIn(entryCorreo, page, validaciones.condicinCorreo)])
         entryCorreo.value = direccion
         selectTipoCorreo = Dropdown(hint_text="Correo", color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoCorreo), options=[
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com")])
@@ -599,18 +599,16 @@ class historial:
 
 #GESTIONAR EL GUARDADO DE ARCHIVOS
 class archivos:
-    def volverGenerarArchivos(page):
+    def volverGenerarArchivos(page, query, parametro, tabla, funcion):
         gestionPrincipal.bitacoraLista.clear()
-        gestionPrincipal.tablaSeleccionarHistorial.rows.clear()
-
-        gestionPrincipal.tablaSeleccionarHistorial.rows = archivos.generarArchivos(page)
+        tabla.rows.clear()
+        tabla.rows = archivos.generarArchivos(page, query, parametro, funcion)
 
         page.update()
 
-    def generarArchivos(page):
+    def generarArchivos(page, query, parametro, funcion):
         coun = 1
-
-        resultadoId = db.consultaConRetorno(consulta.obtenerArchivosId, [gestionPrincipal.cedula.value,])
+        resultadoId = db.consultaConRetorno(query, [parametro,])
 
         for idss in resultadoId:
 
@@ -625,7 +623,7 @@ class archivos:
                     DataCell(Text(f"Jornada {coun}")),
                     DataCell(Text(f"{fecha}")),
                 ],
-                on_select_changed=lambda _, fecha = fecha, ids = ids: [historial.abrirHistorial(page, fecha, ids)]
+                on_select_changed=lambda _, fecha = fecha, ids = ids: [funcion(page, fecha, ids)]
             ),
             )
             coun = coun + 1

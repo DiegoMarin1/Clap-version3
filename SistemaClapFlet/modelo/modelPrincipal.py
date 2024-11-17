@@ -1,4 +1,4 @@
-class jefeFamilia:
+class persona:
     #CONTRUCTOR
     def __init__(self, cedula, nombre, apellido, telefono, correo, ubicacion):
         self.cedula = cedula
@@ -8,20 +8,37 @@ class jefeFamilia:
         self.correo = correo
         self.ubicacion = ubicacion
 
-    #RETORNAR DATOS
-    def datos(self):
-        return self.cedula, self.nombre, self.apellido, self.telefono, self.correo, self.ubicacion
+class lider(persona):
+    def __init__(self, cedula, nombre, apellido, telefono, correo, ubicacion, usuario, contrasena, nivel, status, pregunta, respuesta):
+        super().__init__(cedula, nombre, apellido, telefono, correo, ubicacion)
+        self.__usuario = usuario
+        self.__contrasena = contrasena
+        self.__nivel = nivel
+        self.__status = status
+        self.pregunta = pregunta
+        self.respuesta = respuesta
 
-class liderCalle:
-    #CONTRUCTOR
-    def __init__(self, cedula, nombre, apellido, telefono, correo, ubicacion):
-        self.nombre = nombre
-        self.apellido = apellido
-        self.cedula = cedula
-        self.telefono = telefono
-        self.correo = correo
-        self.ubicacion = ubicacion
+    def set_contrasena(self, contrasena):
+        self.__contrasena = contrasena
 
-    #RETORNAR DATOS
-    def datos(self):
-        return self.cedula, self.nombre, self.apellido, self.telefono, self.correo, self.ubicacion
+    def set_status(self, status):
+        self.__status = status
+    
+class jefeFamiliar(persona):
+    def __init__(self, cedula, nombre, apellido, telefono, correo, ubicacion, liderId, estatus):
+        super().__init__(cedula, nombre, apellido, telefono, correo, ubicacion)
+        self.__liderId = liderId
+        self.__estatus = estatus
+    
+    def get_liderId(self):
+        return self.__liderId
+    
+    def set_estatus(self, estatus):
+        self.__estatus = estatus
+
+class cilindro:
+    def __init__(self, empresa, tamano, pico, precio):
+        self.empresa = empresa
+        self.tamano = tamano
+        self.pico = pico
+        self.precio = precio

@@ -4,7 +4,7 @@ from flet import View, Stack, AnimatedSwitcher, AnimatedSwitcherTransition, Anim
 from flet_route import Params, Basket
 from gestores.gestorRecuperar import *
 from gestores.gestorRecuperar import gestionRecuperar
-from controlador.mensajes import mensaje
+from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas
 
 class recuperar:
@@ -17,11 +17,11 @@ class recuperar:
         self.tipoCedula = Dropdown(label="Tipo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCedula), options=[
                 dropdown.Option("V"), dropdown.Option("E")])
         self.tipoCedula.value = "V"
-        self.cedula = TextField(label="Cedula", hint_text="Minimo 7 caracteres", border_color="#820000", border_radius=20, width=180, height=60, max_length=8, on_change=lambda _: [mensaje.quitarError(page, self.cedula), mensaje.validarNumeros(self.cedula, page)])
+        self.cedula = TextField(label="Cedula", hint_text="Minimo 7 caracteres", border_color="#820000", border_radius=20, width=180, height=60, max_length=8, on_change=lambda _: [mensaje.quitarError(page, self.cedula), validaciones.validarCamposNot(self.cedula, page, True, validaciones.condicionNumeros)])
         self.pregunta = Text("", style=TextThemeStyle.TITLE_MEDIUM)
-        self.respuesta = TextField(hint_text="Escriba su respuesta", capitalization=TextCapitalization.SENTENCES, label="Respuesta", border_radius=30, border_color="#820000", width=280, height=60, on_change=lambda _:[mensaje.quitarError(page, self.respuesta), mensaje.validarNombres(self.respuesta, page)])
-        self.contrasena = TextField(hint_text="Minimo 6 caracteres", label="Contraseña", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, width=280, height=60, max_length=12, on_change=lambda _:[mensaje.quitarError(page, self.contrasena), mensaje.validarEspacio(self.contrasena, page)])
-        self.confimarContrasena = TextField(hint_text="Confirmar contraseña", label="Confirmar", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, width=280, height=60, on_change=lambda _:[mensaje.quitarError(page, self.confimarContrasena), mensaje.validarEspacio(self.confimarContrasena, page)])
+        self.respuesta = TextField(hint_text="Escriba su respuesta", capitalization=TextCapitalization.SENTENCES, label="Respuesta", border_radius=30, border_color="#820000", width=280, height=60, on_change=lambda _:[mensaje.quitarError(page, self.respuesta), validaciones.validarCamposNot(self.respuesta, page, False, validaciones.condicionNombres)])
+        self.contrasena = TextField(hint_text="Minimo 6 caracteres", label="Contraseña", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, width=280, height=60, max_length=12, on_change=lambda _:[mensaje.quitarError(page, self.contrasena), validaciones.validarCamposIn(self.contrasena, page, validaciones.condicionEspacios)])
+        self.confimarContrasena = TextField(hint_text="Confirmar contraseña", label="Confirmar", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, width=280, height=60, on_change=lambda _:[mensaje.quitarError(page, self.confimarContrasena), validaciones.validarCamposIn(self.confimarContrasena, page, validaciones.condicionEspacios)])
 
         page.title = "CLAP"
         page.window_resizable = False

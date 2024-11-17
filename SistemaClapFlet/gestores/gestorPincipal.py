@@ -1,10 +1,11 @@
 from flet import ScrollMode, Container, Text, SnackBar, Dropdown, dropdown, alignment, border_radius, border, TextCapitalization, TextField, CrossAxisAlignment, MainAxisAlignment, Column, FontWeight, TextButton, AlertDialog, padding, TextThemeStyle, DataRow, DataCell, Row, icons, IconButton, ElevatedButton
 from controlador.conexion import db
 from controlador.rutas import rutas
-from controlador.mensajes import mensaje
-from gestores.gestorLiderPolitico import editarDatosUsuario
-from modelo.modelPrincipal import jefeFamilia, liderCalle
+from controlador.mensajes import mensaje, validaciones
+from gestores.gestorLiderPolitico import editarDatosUsuario, archivos
+from modelo.modelPrincipal import jefeFamiliar, lider, cilindro
 from modelo.consultas import consulta
+
 import modelo.reporte
 from modelo.reporte import Pdf
 
@@ -27,7 +28,7 @@ class gestionPrincipal:
     contenido = []
     bitacoraLista = []
     his = []
-
+    
     formulario = None
 
     columnaCards = None
@@ -116,6 +117,7 @@ class cartasJefesFamilia:
     #LIMPIA EL CONTEDOR DE LAS CARTAS
     def volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros):
         if db.consultaConRetorno(consulta.verificarJefesFamiliaCartas, [iDLiderCalle,]):
+            gestionPrincipal.cartas.clear()
             gestionPrincipal.columnaCards.controls.clear()
             gestionPrincipal.tituloAgregarJefes.visible = False
             gestionPrincipal.columnaCards.controls = cartasJefesFamilia.generarCards(page, iDLiderCalle, tablaPedido, tablaCilindros)
@@ -151,7 +153,7 @@ class formularioJefeFamilia:
         resultadoQuery = db.consultaConRetorno(consulta.obtenerCilindrosJefeFamilia, [idJefeFamilia,])
 
         tablaCilindros.rows.clear()
-        gestionPrincipal.titulo.value = f"Cilindros de {nombre}"
+        gestionPrincipal.titulo.value = mensaje.cambiarNombreTitulo(nombre)
         tablaCilindros.rows = formularioJefeFamilia.mostrarCilindrosJefes(idJefeFamilia, page, nombre, tablaCilindros, tablaPedido)
 
         if resultadoQuery:
@@ -246,8 +248,8 @@ class registrarJefeFamiliaCilindros:
         arregloTelefono = f"{codigoTelefono.value}-{numeroTelefono.value}"
 
         verificarCedulaJefesFamilia = db.consultaConRetorno(consulta.verificarCedulaJefesFamilia, [arregloCedula,])
-
-        if (nombre.value == "") or (apellido.value == "") or (cedula.value == "") or (numeroTelefono.value == "") or (correo.value == "") or (tipoCorreo.value == None) or (codigoTelefono.value == None) or (cantidadCi.value == 0) or (len(nombre.value) in range(1, 3)) or (len(apellido.value) in range(1, 4)) or (len(cedula.value) in range(1, 7)) or (len(numeroTelefono.value) in range(1, 7)):
+        listaCondicion = [nombre.value, apellido.value, cedula.value, numeroTelefono.value, correo.value, tipoCorreo.value, correo.value, tipoCorreo.value]
+        if ("" or None) in listaCondicion or (cantidadCi.value == 0) or (len(nombre.value) in range(1, 3)) or (len(apellido.value) in range(1, 4)) or (len(cedula.value) in range(1, 7)) or (len(numeroTelefono.value) in range(1, 7)):
             
             for control in (nombre, apellido, cedula, numeroTelefono, correo, tipoCorreo, correo, tipoCorreo):
                 if not control.value:
@@ -271,7 +273,7 @@ class registrarJefeFamiliaCilindros:
                 page.update()
             
             if len(numeroTelefono.value) in range(1, 7):
-                numeroTelefono.error_text = "Numero de telefono no valido"
+                numeroTelefono.error_text = mensaje.telefonoInvalido
                 page.update()
 
         elif verificarCedulaJefesFamilia:
@@ -285,7 +287,7 @@ class registrarJefeFamiliaCilindros:
             page.update()
 
         elif db.consultaConRetorno(consulta.verificarCorreoJefesFamilia, [arregloCorreo,]):
-            page.snack_bar = SnackBar(content=Text("Este correo ya esta en uso"))
+            page.snack_bar = SnackBar(content=Text(mensaje.correoRegistrado))
             page.snack_bar.open = True
             page.update()
 
@@ -355,31 +357,27 @@ class registrarJefeFamiliaCilindros:
 
     def abrirAlertConfirmarCilindros(page, nombre, apellido, cedula, tipoCedula, correo, tipoCorreo, numeroTelefono, codigoTelefono, cantidadCi, iDLiderCalle, tablaPedido, tablaCilindros):
         textoConfirmar = Text(f"Estas seguro que desea registrar al jefe de familia {nombre.value} {apellido.value}?")
-
+        nuevoJefe = jefeFamiliar(f"{tipoCedula.value}-{cedula.value}", nombre.value, apellido.value, f"{codigoTelefono.value}-{numeroTelefono.value}", f"{correo.value}{tipoCorreo.value}", True, iDLiderCalle, 1)
         alertConfirmarCilindros = AlertDialog(content=textoConfirmar,
-            actions=[TextButton("Confirmar", on_click=lambda _:[registrarJefeFamiliaCilindros.guardarJefe(page, alertConfirmarCilindros, nombre, apellido, cedula, tipoCedula, correo, tipoCorreo, numeroTelefono, codigoTelefono, cantidadCi, textoConfirmar, iDLiderCalle, tablaPedido, tablaCilindros)]), 
+            actions=[TextButton("Confirmar", on_click=lambda _:[registrarJefeFamiliaCilindros.guardarJefe(page, alertConfirmarCilindros, nuevoJefe, cantidadCi, textoConfirmar, tablaPedido, tablaCilindros)]), 
             TextButton("Cancelar", on_click=lambda _:[mensaje.cerrarAlert(page, alertConfirmarCilindros)])]
         )
 
         page.dialog = alertConfirmarCilindros
         alertConfirmarCilindros.open = True
-
+        nuevoJefe.telefono
         page.update()
 
-    def guardarJefe(page, alert, nombre, apellido, cedula, tipoCedula, correo, tipoCorreo, numeroTelefono, codigoTelefono, cantidadCi, textoConfirmar, iDLiderCalle, tablaPedido, tablaCilindros):
-        arregloCedula = f"{tipoCedula.value}-{cedula.value}"
-        arregloCorreo = f"{correo.value}{tipoCorreo.value}"
-        arregloTelefono = f"{codigoTelefono.value}-{numeroTelefono.value}"
-
+    def guardarJefe(page, alert, nuevoJefe, cantidadCi, textoConfirmar, tablaPedido, tablaCilindros):
         alert.actions.clear()
         textoConfirmar.value = "Guardando datos, por favor espere"
         page.update()
 
         #INSERTAR LOS DATOS DEL LIDER DE FAMILIA
-        db.consultaSinRetorno(consulta.guardarJefeFamilia, [arregloCedula, nombre.value, apellido.value, arregloTelefono, arregloCorreo, iDLiderCalle])
+        db.consultaSinRetorno(consulta.guardarJefeFamilia, [nuevoJefe.cedula, nuevoJefe.nombre, nuevoJefe.apellido, nuevoJefe.telefono, nuevoJefe.correo, nuevoJefe.get_liderId()])
 
         #OBTENER EL ID DEL LIDER DE FAMILIA
-        idJefeFamiliar = db.consultaConRetorno(consulta.obtenerIdJefeFamilia, [arregloCedula,])
+        idJefeFamiliar = db.consultaConRetorno(consulta.obtenerIdJefeFamilia, [nuevoJefe.cedula,])
 
         #CICLO PARA OBTENER LOS IDS
         for empresa, tamano, pico in gestionPrincipal.datosCilindrosLista:
@@ -404,21 +402,21 @@ class registrarJefeFamiliaCilindros:
 
         mensaje.cerrarAlert(page, alert)
         mensaje.cambiarTitulo(page, gestionPrincipal.titulo, "Mi Comunidad")
-        regresarAtras.regresarAlInicioCompletado(page, nombre, apellido, cedula, cantidadCi, numeroTelefono, codigoTelefono, correo, tipoCorreo, tipoCedula, empresa, pico, tamano, iDLiderCalle, tablaPedido, tablaCilindros)
+        regresarAtras.regresarAlInicioCompletado(page, cantidadCi, empresa, pico, tamano, nuevoJefe.get_liderId(), tablaPedido, tablaCilindros)
 
 class editarDatosJefeFamilia:
     #MOSTRAR LOS DATOS DE LOS JEFES
     def cargarDatosJefe(page):
         global datosJefeFamilia
         resultado = db.consultaConRetorno(consulta.mostrarDatosJefe, [cedulaIdentidad,])
-        datosJefeFamilia = jefeFamilia(resultado[0][2], resultado[0][0], resultado[0][1], resultado[0][3], resultado[0][4], resultado[0][5])
+        datosJefeFamilia = jefeFamiliar(resultado[0][2], resultado[0][0], resultado[0][1], resultado[0][3], resultado[0][4], resultado[0][5], resultado[0][6], resultado[0][7])
 
-        gestionPrincipal.nombreJ.value = f"{datosJefeFamilia.datos()[1]}"
-        gestionPrincipal.apellidoJ.value = f"{datosJefeFamilia.datos()[2]}"
-        gestionPrincipal.cedulaJ.value = f"{datosJefeFamilia.datos()[0]}"
-        gestionPrincipal.telefonoJ.value = f"{datosJefeFamilia.datos()[3]}"
-        gestionPrincipal.correoJ.value = f"{datosJefeFamilia.datos()[4]}"
-        gestionPrincipal.ubicacionJ.value = f"{datosJefeFamilia.datos()[5]}"
+        gestionPrincipal.nombreJ.value = f"{datosJefeFamilia.nombre}"
+        gestionPrincipal.apellidoJ.value = f"{datosJefeFamilia.apellido}"
+        gestionPrincipal.cedulaJ.value = f"{datosJefeFamilia.cedula}"
+        gestionPrincipal.telefonoJ.value = f"{datosJefeFamilia.telefono}"
+        gestionPrincipal.correoJ.value = f"{datosJefeFamilia.correo}"
+        gestionPrincipal.ubicacionJ.value = f"{datosJefeFamilia.ubicacion}"
 
         rutas.animar(gestionPrincipal.formulario, gestionPrincipal.contenedorPerfilJefe, gestionPrincipal.contenedorPerfilJefe, page)
 
@@ -426,8 +424,8 @@ class editarDatosJefeFamilia:
 
     #SECCION NOMBRE
     def editNombre(page, iDLiderCalle, tablaPedido, tablaCilindros):
-        entryNombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), mensaje.validarNombres(entryNombre, page)])
-        entryNombre.value = datosJefeFamilia.datos()[1]
+        entryNombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), validaciones.validarCamposNot(entryNombre, page, True, validaciones.condicionNombres)])
+        entryNombre.value = datosJefeFamilia.nombre
 
         alertEditNombre = AlertDialog(
             content=Container(
@@ -446,7 +444,7 @@ class editarDatosJefeFamilia:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarNombre(page, entryNombre, iDLiderCalle, tablaPedido, tablaCilindros, alertEditNombre)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarCamposSencillos(page, entryNombre, iDLiderCalle, tablaPedido, tablaCilindros, alertEditNombre, consulta.actualizarNombreJefe, mensaje.nombreEditadoFinal, 3, True)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre))
                     ]
                 )
@@ -458,27 +456,10 @@ class editarDatosJefeFamilia:
 
         page.update()
 
-    def validarNombre(page, widgetNombreJ, iDLiderCalle, tablaPedido, tablaCilindros, alertEditNombre):
-        if (widgetNombreJ.value == "") or (len(widgetNombreJ.value) in range(1, 3)):
-            if widgetNombreJ.value == "":
-                widgetNombreJ.error_text = mensaje.campoFaltante
-                page.update()
-            if len(widgetNombreJ.value) in range(1, 3):
-                widgetNombreJ.error_text = mensaje.minimoCaracteres(3)
-                page.update()
-        else:
-            db.consultaSinRetorno(consulta.actualizarNombreJefe, [widgetNombreJ.value, cedulaIdentidad])
-            cartasJefesFamilia.volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros)
-            editarDatosJefeFamilia.cargarDatosJefe(page)
-            mensaje.cerrarAlert(page, alertEditNombre)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El nombre se modifico correctamente"))
-            page.snack_bar.open = True
-            page.update()
-
     #SECCION APELLIDO
     def editApellido(page, iDLiderCalle, tablaPedido, tablaCilindros):
-        entryApellido = TextField(label="Apellido", hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), mensaje.validarNombres(entryApellido, page)])
-        entryApellido.value = datosJefeFamilia.datos()[2]
+        entryApellido = TextField(label="Apellido", hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), validaciones.validarCamposNot(entryApellido, page, False, validaciones.condicionNombres)])
+        entryApellido.value = datosJefeFamilia.apellido
 
         alertEditApellido = AlertDialog(
             content=Container(
@@ -497,7 +478,7 @@ class editarDatosJefeFamilia:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarApellido(page, entryApellido, iDLiderCalle, tablaPedido, tablaCilindros, alertEditApellido)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarCamposSencillos(page, entryApellido, iDLiderCalle, tablaPedido, tablaCilindros, alertEditApellido, consulta.actualizarApellidoJefe, mensaje.apellidoEditadoFinal, 4, False)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido))
                     ]
                 )
@@ -509,20 +490,22 @@ class editarDatosJefeFamilia:
 
         page.update()
 
-    def validarApellido(page, widgetApellidoJ, iDLiderCalle, tablaPedido, tablaCilindros, alertEditApellido):
-        if (widgetApellidoJ.value == "") or (len(widgetApellidoJ.value) in range(1, 4)):
-            if widgetApellidoJ.value == "":
-                widgetApellidoJ.error_text = mensaje.campoFaltante
+    def validarCamposSencillos(page, campo1, iDLiderCalle, tablaPedido, tablaCilindros, alertValidar, query, mensajeFinal, rango, condicion):
+        if (campo1.value == "") or (len(campo1.value) in range(1, rango)):
+            if campo1.value == "":
+                campo1.error_text = mensaje.campoFaltante
                 page.update()
-            if len(widgetApellidoJ.value) in range(1, 4):
-                widgetApellidoJ.error_text = mensaje.minimoCaracteres(4)
+            if len(campo1.value) in range(1, rango):
+                campo1.error_text = mensaje.minimoCaracteres(rango)
                 page.update()
         else:
-            db.consultaSinRetorno(consulta.actualizarApellidoJefe, [widgetApellidoJ.value, cedulaIdentidad])
+            db.consultaSinRetorno(query, [campo1.value, cedulaIdentidad])
             cartasJefesFamilia.volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros)
             editarDatosJefeFamilia.cargarDatosJefe(page)
-            mensaje.cerrarAlert(page, alertEditApellido)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El apellido se modifico correctamente"))
+            mensaje.cerrarAlert(page, alertValidar)
+            if condicion == True:
+                gestionPrincipal.titulo.value = mensaje.cambiarNombreTitulo(campo1.value)
+            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text(mensajeFinal))
             page.snack_bar.open = True
             page.update()
 
@@ -532,14 +515,14 @@ class editarDatosJefeFamilia:
         direccion = ""
         tipo = ""
 
-        if datosJefeFamilia.datos()[4][-10:] == "@gmail.com":
-            direccion = datosJefeFamilia.datos()[4][:-10]
-            tipo = datosJefeFamilia.datos()[4][-10:]
+        if datosJefeFamilia.correo[-10:] == "@gmail.com":
+            direccion = datosJefeFamilia.correo[:-10]
+            tipo = datosJefeFamilia.correo[-10:]
         else:
-            direccion = datosJefeFamilia.datos()[4][:-12]
-            tipo = datosJefeFamilia.datos()[4][-12:]
+            direccion = datosJefeFamilia.correo[:-12]
+            tipo = datosJefeFamilia.correo[-12:]
 
-        entryCorreo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, entryCorreo), mensaje.validarCorreo(entryCorreo, page)])
+        entryCorreo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, entryCorreo), validaciones.validarCamposIn(entryCorreo, page, validaciones.condicinCorreo)])
         entryCorreo.value = direccion
         selectTipoCorreo = Dropdown(hint_text="Correo", color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoCorreo), options=[
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com")])
@@ -563,7 +546,7 @@ class editarDatosJefeFamilia:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarCorreo(page, selectTipoCorreo, entryCorreo, iDLiderCalle, tablaPedido, tablaCilindros, alertEditCorreo)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validacionCampoComplejo(page, selectTipoCorreo, entryCorreo, iDLiderCalle, tablaPedido, tablaCilindros, alertEditCorreo, mensaje.correoInvalido, consulta.verificarCorreoEditar, mensaje.correoRegistrado, consulta.actualizarCorreoJefe, mensaje.correoGuardado, 3, False)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo))
                     ]
                 )
@@ -574,38 +557,16 @@ class editarDatosJefeFamilia:
         alertEditCorreo.open = True
 
         page.update()
-
-    def validarCorreo(page, tipo, correo, iDLiderCalle, tablaPedido, tablaCilindros, alertEditCorreo):
-        arregloCorreo = f"{correo.value}{tipo.value}"
-
-        if (correo.value == ""):
-            if correo.value == "":
-                correo.error_text = mensaje.campoFaltante
-                page.update()
-
-        elif db.consultaConRetorno(consulta.verificarCorreoEditar, [arregloCorreo,]):
-            page.snack_bar = SnackBar(content=Text("Esta correo ya esta registrado"))
-            page.snack_bar.open = True
-            page.update()
-        
-        else:
-            db.consultaSinRetorno([arregloCorreo, cedulaIdentidad])
-            cartasJefesFamilia.volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros)
-            editarDatosJefeFamilia.cargarDatosJefe(page)
-            mensaje.cerrarAlert(page, alertEditCorreo)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El correo se modifico correctamente"))
-            page.snack_bar.open = True
-            page.update()
     
     #SECCION TELEFONO
     def editTelefono(page, iDLiderCalle, tablaPedido, tablaCilindros):
-        codigo = datosJefeFamilia.datos()[3][:4]
-        telefono = datosJefeFamilia.datos()[3][-7:]
+        codigo = datosJefeFamilia.telefono[:4]
+        telefono = datosJefeFamilia.telefono[-7:]
 
         selectTipoTelefono = Dropdown(hint_text="Codigo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoTelefono), options=[
                 dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
         selectTipoTelefono.value = codigo
-        entryTelefono = TextField(label="N telefono", hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), mensaje.validarNumeros(entryTelefono, page)])
+        entryTelefono = TextField(label="N telefono", hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), validaciones.validarCamposNot(entryTelefono, page, False, validaciones.condicionNumeros)])
         entryTelefono.value = telefono
 
         alertEditTelefono = AlertDialog(
@@ -626,7 +587,7 @@ class editarDatosJefeFamilia:
                 Row(
                     alignment=MainAxisAlignment.CENTER,
                     controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarTelefono(page, selectTipoTelefono, entryTelefono, iDLiderCalle, tablaPedido, tablaCilindros, alertEditTelefono)),
+                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validacionCampoComplejo(page, selectTipoTelefono, entryTelefono, iDLiderCalle, tablaPedido, tablaCilindros, alertEditTelefono, mensaje.telefonoInvalido, consulta.verificarTelefonoEditar, mensaje.telefonoRegistrado, consulta.actualizarTelefonoJefe, mensaje.telefonoGuardado, 7, True)),
                         ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono))
                     ]
                 )
@@ -637,30 +598,35 @@ class editarDatosJefeFamilia:
         alertEditTelefono.open = True
 
         page.update()
+    
+    def validacionCampoComplejo(page, campo1, campo2, iDLiderCalle, tablaPedido, tablaCilindros, alertEdicion, mensajeInvalido, query, mensajeRepetido, queryGuardar, mensajeFinal, rango, condicion):
+        #TRUE PARA TELEFONO
+        if condicion == True:
+            arreglo = f"{campo1.value}-{campo2.value}"
+        #FALSE PARA CORREO
+        if condicion == False:
+            arreglo = f"{campo2.value}{campo1.value}"
 
-    def validarTelefono(page, codigo, telefono, iDLiderCalle, tablaPedido, tablaCilindros, alertEditTelefono):
-        arregloTelefono = f"{codigo.value}-{telefono.value}"
-
-        if (telefono.value == "") or (len(telefono.value) in range(1, 7)):
-            if telefono.value == "":
-                telefono.error_text = mensaje.campoFaltante
+        if (campo2.value == "") or (len(campo2.value) in range(1, rango)):
+            if campo2.value == "":
+                campo2.error_text = mensaje.campoFaltante
                 page.update()
 
-            if len(telefono.value) in range(1, 7):
-                telefono.error_text = "numero de telefono invalido"
+            if len(campo2.value) in range(1, rango):
+                campo2.error_text = mensajeInvalido
                 page.update()
 
-        elif db.consultaConRetorno(consulta.verificarTelefonoEditar, [arregloTelefono,]):
-            page.snack_bar = SnackBar(content=Text("Esta numero de telefono ya esta registrada"))
+        elif db.consultaConRetorno(query, [arreglo,]):
+            page.snack_bar = SnackBar(content=Text(mensajeRepetido))
             page.snack_bar.open = True
             page.update()
-        
+
         else:
-            db.consultaSinRetorno(consulta.actualizarTelefonoJefe, [arregloTelefono, cedulaIdentidad])
+            db.consultaSinRetorno(queryGuardar, [arreglo, cedulaIdentidad])
             cartasJefesFamilia.volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros)
             editarDatosJefeFamilia.cargarDatosJefe(page)
-            mensaje.cerrarAlert(page, alertEditTelefono)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El numero de telefono se modifico correctamente"))
+            mensaje.cerrarAlert(page, alertEdicion)
+            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text(mensajeFinal))
             page.snack_bar.open = True
             page.update()
 
@@ -983,76 +949,27 @@ class historial:
 class archivoPdf:
     #LIMPIAN LOS CONTENEDORES ANTES DE CARGAR LA INFORAMCION
     def volverGenerarArchivos(page):
-        gestionPrincipal.bitacoraLista.clear()
-        gestionPrincipal.tablaSeleccionarHistorial.rows.clear()
-        gestionPrincipal.tablaSeleccionarHistorial.rows = archivoPdf.generarArchivos(page)
-
-        page.update()
-
-    def generarArchivos(page):
-        coun = 1
-
-        resultadoId = db.consultaConRetorno(consulta.obtenerIdArchivos, [mensaje.datosUsuarioLista[0][0],])
-
-        for idss in resultadoId:
-
-            datos = db.consultaConRetorno(consulta.obtenerFechasJornadas, [idss[0],])
-
-            gestionPrincipal.bitacoraLista.append([datos[0][0], datos[0][1]])
-
-        for fecha, ids in gestionPrincipal.bitacoraLista:
-            gestionPrincipal.his.append(DataRow(
-                color="WHITE",
-                cells=[
-                    DataCell(Text(f"Jornada {coun}")),
-                    DataCell(Text(f"{fecha}")),
-                ],
-                on_select_changed=lambda _, fecha = fecha, ids = ids: [historial.abrirHistorial(page, fecha, ids)]
-            ),
-            )
-            coun = coun + 1
-
-            page.update()
-
-        return gestionPrincipal.his
-    
-    def descargarArchivo(page, alertt, ids):
-        origen = db.consultaConRetorno(consulta.origenRutaArchivo, [ids,])
-        destino = os.path.join(os.path.join(os.environ['USERPROFILE']), rf'Desktop\Reportes')
-
-        rutaEscritorio = os.path.join(os.path.join(os.environ['USERPROFILE']), rf'Desktop\Reportes')
-
-        if os.path.exists(rutaEscritorio) == True:
-            pass
-        else:
-            os.mkdir(rutaEscritorio)
-
-        shutil.copy(origen[0][0], destino)
-
-        mensaje.cerrarAlert(page, alertt)
-        page.snack_bar = SnackBar(content=Text("El PDF se descargo correctamente, puede visualizarlo en la caperta Reportes ubicada en el escritorio"), bgcolor="GREEN")
-        page.snack_bar.open = True
-        page.update()
+        archivos.volverGenerarArchivos(page, consulta.obtenerIdArchivos, mensaje.datosUsuarioLista[0][0], gestionPrincipal.tablaSeleccionarHistorial, historial.abrirHistorial)
 
 class editarDatosLiderCalle:
     def cargarDatosLider(page):
         global datosLiderCalle
         resultado = db.consultaConRetorno(consulta.mostrarDatosLider, [mensaje.datosUsuarioLista[0][0],])
-        datosLiderCalle = liderCalle(resultado[0][0], resultado[0][1], resultado[0][2], resultado[0][3], resultado[0][4], resultado[0][5])
+        datosLiderCalle = lider(resultado[0][0], resultado[0][1], resultado[0][2], resultado[0][3], resultado[0][4], resultado[0][5], resultado[0][6], resultado[0][7], resultado[0][8], resultado[0][9], resultado[0][10], resultado[0][11])
 
-        gestionPrincipal.nombreLi.value = f"{resultado[0][0]}"
-        gestionPrincipal.apellidoLi.value = f"{resultado[0][1]}"
-        gestionPrincipal.cedulaLi.value = f"{resultado[0][2]}"
-        gestionPrincipal.telefonoLi.value = f"{resultado[0][3]}"
-        gestionPrincipal.correoLi.value = f"{resultado[0][4]}"
-        gestionPrincipal.ubicacionLi.value = f"{resultado[0][5]}"
+        gestionPrincipal.nombreLi.value = datosLiderCalle.nombre
+        gestionPrincipal.apellidoLi.value = datosLiderCalle.apellido
+        gestionPrincipal.cedulaLi.value = datosLiderCalle.cedula
+        gestionPrincipal.telefonoLi.value = datosLiderCalle.telefono
+        gestionPrincipal.correoLi.value = datosLiderCalle.correo
+        gestionPrincipal.ubicacionLi.value = datosLiderCalle.ubicacion
 
         page.update()
 
     #SECCION NOMBRE
     def editNombreLi(page, slider):
-        entryNombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), mensaje.validarNombres(entryNombre, page)])
-        entryNombre.value = datosLiderCalle.datos()[0]
+        entryNombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), validaciones.validarCamposNot(entryNombre, page, False, validaciones.condicionNombres)])
+        entryNombre.value = datosLiderCalle.nombre
 
         alertEditNombre = AlertDialog(
             content=Container(
@@ -1086,8 +1003,8 @@ class editarDatosLiderCalle:
     #SECCION APELLIDO
     def editApellidoLi(page, slider):
 
-        entryApellido = TextField(label="Apellido", hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), mensaje.validarNombres(entryApellido, page)])
-        entryApellido.value = datosLiderCalle.datos()[1]
+        entryApellido = TextField(label="Apellido", hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), validaciones.validarCamposNot(entryApellido, page, False, validaciones.condicionNombres)])
+        entryApellido.value = datosLiderCalle.apellido
 
         alertEditApellido = AlertDialog(
             content=Container(
@@ -1120,13 +1037,13 @@ class editarDatosLiderCalle:
 
     #SECCION TELEFONO
     def editTelefonoLi(page):
-        codigo = datosLiderCalle.datos()[3][:4]
-        telefono = datosLiderCalle.datos()[3][-7:]
+        codigo = datosLiderCalle.telefono[:4]
+        telefono = datosLiderCalle.telefono[-7:]
 
         selectTipoTelefono = Dropdown(hint_text="Codigo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoTelefono), options=[
                 dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
         selectTipoTelefono.value = codigo
-        entryTelefono = TextField(label=mensaje.nTelefono, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), mensaje.validarNumeros(entryTelefono, page)])
+        entryTelefono = TextField(label=mensaje.nTelefono, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), validaciones.validarCamposNot(entryTelefono, page, True, validaciones.condicionNumeros)])
         entryTelefono.value = telefono
 
         alertEditTelefono = AlertDialog(
@@ -1164,14 +1081,14 @@ class editarDatosLiderCalle:
         direccion = ""
         tipo = ""
 
-        if datosLiderCalle.datos()[4][-10:] == "@gmail.com":
-            direccion = datosLiderCalle.datos()[4][:-10]
-            tipo = datosLiderCalle.datos()[4][-10:]
+        if datosLiderCalle.correo[-10:] == "@gmail.com":
+            direccion = datosLiderCalle.correo[:-10]
+            tipo = datosLiderCalle.correo[-10:]
         else:
-            direccion = datosLiderCalle.datos()[4][:-12]
-            tipo = datosLiderCalle.datos()[4][-12:]
+            direccion = datosLiderCalle.correo[:-12]
+            tipo = datosLiderCalle.correo[-12:]
 
-        entryCorreo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, entryCorreo), mensaje.validarCorreo(entryCorreo, page)])
+        entryCorreo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, entryCorreo), validaciones.validarCamposIn(entryCorreo, page, validaciones.condicinCorreo)])
         entryCorreo.value = direccion
         selectTipoCorreo = Dropdown(hint_text="Correo", color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoCorreo), options=[
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com")])
@@ -1262,16 +1179,17 @@ class regresarAtras:
 
         page.update()
 
-    def regresarAlInicioCompletado(page, nombre, apellido, cedula, cantidadCi, numeroTelefono, codigoTelefono, correo, tipoCorreo, tipoCedula, empresa, pico, tamano, iDLiderCalle, tablaPedido, tablaCilindros):
-        nombre.value = ""
-        apellido.value = ""
-        cedula.value = ""
+    #ARREGLAR ESTO
+    def regresarAlInicioCompletado(page, cantidadCi, empresa, pico, tamano, iDLiderCalle, tablaPedido, tablaCilindros):
+        gestionPrincipal.nombreJ.value = ""
+        gestionPrincipal.apellidoJ.value = ""
+        gestionPrincipal.cedulaJ.value = ""
         cantidadCi.value = None
-        numeroTelefono.value = ""
-        codigoTelefono.value = None
-        correo.value = ""
-        tipoCorreo.value = None
-        tipoCedula.value = "V"
+        gestionPrincipal.telefonoJ.value = ""
+        #gestionPrincipal.codigoTelefono.value = None
+        gestionPrincipal.correoJ.value = ""
+        #gestionPrincipal.tipoCorreo.value = None
+        #gestionPrincipal.value = "V"
 
         gestionPrincipal.itemsCilindrosLista.clear()
         gestionPrincipal.datosCilindrosLista.clear()

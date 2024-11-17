@@ -13,7 +13,6 @@ class gestionLogin:
 
     def camposVacios(page, usuario, contrasena):
 
-       
             if (usuario.value == "") or (contrasena.value == ""):
                 if usuario.value == "":
                     usuario.error_text = mensaje.campoFaltante

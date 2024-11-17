@@ -3,7 +3,7 @@ from flet import View, Stack, AnimatedSwitcher, AnimatedSwitcherTransition, Anim
 
 from flet_route import Params, Basket
 from controlador.rutas import rutas
-from controlador.mensajes import mensaje
+from controlador.mensajes import mensaje, validaciones
 from gestores.gestorRegister import *
 from gestores.gestorRegister import gestionRegister
 
@@ -23,28 +23,28 @@ class register:
         page.window_maximizable = False
 
         #WIDGET
-        self.usuario = TextField(label="Usuario", hint_text=mensaje.minimoCaracteres(5), max_length=10, border_color="#820000", border_radius=20, prefix_icon=icons.PERSON, width=280, height=60, on_change=lambda _: [mensaje.quitarError(page, self.usuario), mensaje.validarEspacio(self.usuario, page)])
-        self.contrasena = TextField(label="Contrasena", hint_text=mensaje.minimoCaracteres(6), max_length=12, border_color="#820000", border_radius=20, prefix_icon=icons.LOCK, width=280, height=60, on_change=lambda _: [mensaje.quitarError(page, self.contrasena), mensaje.validarEspacio(self.contrasena, page)])
-        self.confirmarContrasena = TextField(hint_text="Confirmar Contrasena", border_color="#820000", border_radius=20, prefix_icon=icons.LOCK, width=280, height=60, on_change=lambda _: [mensaje.quitarError(page, self.confirmarContrasena), mensaje.validarEspacio(self.confirmarContrasena, page)])
-        self.nombre = TextField(label="Nombre", hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_color="#820000", border_radius=20, width=140, height=60, on_change=lambda _: [mensaje.quitarError(page, self.nombre), mensaje.validarNombres(self.nombre, page)])
-        self.apellido = TextField(label="Apellido", hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_color="#820000", border_radius=20, width=140, height=60, on_change=lambda _: [mensaje.quitarError(page, self.apellido), mensaje.validarNombres(self.apellido, page)])
+        self.usuario = TextField(label="Usuario", hint_text=mensaje.minimoCaracteres(5), max_length=10, border_color="#820000", border_radius=20, prefix_icon=icons.PERSON, width=280, height=60, on_change=lambda _: [mensaje.quitarError(page, self.usuario), validaciones.validarCamposIn(self.usuario, page, validaciones.condicionEspacios)])
+        self.contrasena = TextField(label="Contrasena", hint_text=mensaje.minimoCaracteres(6), max_length=12, border_color="#820000", border_radius=20, prefix_icon=icons.LOCK, width=280, height=60, on_change=lambda _: [mensaje.quitarError(page, self.contrasena), validaciones.validarCamposIn(self.contrasena, page, validaciones.condicionEspacios)])
+        self.confirmarContrasena = TextField(hint_text="Confirmar Contrasena", border_color="#820000", border_radius=20, prefix_icon=icons.LOCK, width=280, height=60, on_change=lambda _: [mensaje.quitarError(page, self.confirmarContrasena), validaciones.validarCamposIn(self.confirmarContrasena, page, validaciones.condicionEspacios)])
+        self.nombre = TextField(label="Nombre", hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_color="#820000", border_radius=20, width=140, height=60, on_change=lambda _: [mensaje.quitarError(page, self.nombre), validaciones.validarCamposNot(self.nombre, page, False, validaciones.condicionNombres)])
+        self.apellido = TextField(label="Apellido", hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_color="#820000", border_radius=20, width=140, height=60, on_change=lambda _: [mensaje.quitarError(page, self.apellido), validaciones.validarCamposNot(self.apellido, page, False, validaciones.condicionNombres)])
         
         self.tipoCedula = Dropdown(label="Tipo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCedula), options=[
                 dropdown.Option("V"), dropdown.Option("E")])
         self.tipoCedula.value = "V"
-        self.cedula = TextField(label="Cedula", hint_text=mensaje.minimoCaracteres(7), border_color="#820000", border_radius=20, width=180, height=60, max_length=8, on_change=lambda _: [mensaje.quitarError(page, self.cedula), mensaje.validarNumeros(self.cedula, page)])
+        self.cedula = TextField(label="Cedula", hint_text=mensaje.minimoCaracteres(7), border_color="#820000", border_radius=20, width=180, height=60, max_length=8, on_change=lambda _: [mensaje.quitarError(page, self.cedula), validaciones.validarCamposNot(self.cedula, page, True, validaciones.condicionNumeros)])
         
         self.codigoTelefono = Dropdown(hint_text="Codigo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.codigoTelefono), options=[
                 dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
-        self.numeroTelefono = TextField(label="N telefono", hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, self.numeroTelefono), mensaje.validarNumeros(self.numeroTelefono, page)])
-        self.correo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _: [mensaje.quitarError(page, self.correo), mensaje.validarCorreo(self.correo, page)])
+        self.numeroTelefono = TextField(label="N telefono", hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, self.numeroTelefono), validaciones.validarCamposNot(self.numeroTelefono, page, True, validaciones.condicionNumeros)])
+        self.correo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _: [mensaje.quitarError(page, self.correo), validaciones.validarCamposIn(self.correo, page, validaciones.condicinCorreo)])
         self.tipoCorreo = Dropdown(hint_text="Correo", color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCorreo), options=[
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com"), dropdown.Option("@outlook.com")])
 
-        self.ubicacion = TextField(label="Ingresa tu ubicacion", hint_text="Ej : Camoruco v12", max_length=30, border_color="#820000", border_radius=20, capitalization=TextCapitalization.SENTENCES, width=280, height=60, on_change=lambda _: [mensaje.quitarError(page, self.ubicacion), mensaje.validarAlfanumeros(self.ubicacion ,page)])
+        self.ubicacion = TextField(label="Ingresa tu ubicacion", hint_text="Ej : Camoruco v12", max_length=30, border_color="#820000", border_radius=20, capitalization=TextCapitalization.SENTENCES, width=280, height=60, on_change=lambda _: [mensaje.quitarError(page, self.ubicacion), validaciones.validarCamposNot(self.ubicacion ,page, True, validaciones.condicionAlfanumericos)])
 
         self.pregunta = Dropdown(hint_text="Elegir Pregunta de Seguridad", color="black",border_color="#820000", border_radius=20, width=280, height=60, on_change=lambda _: mensaje.quitarError(page, self.pregunta))
-        self.respuesta = TextField(label="Respuesta", hint_text=mensaje.minimoCaracteres(3), max_length=20, capitalization=TextCapitalization.SENTENCES, border_color="#820000", border_radius=20, width=280, height=60, on_change=lambda _: [mensaje.quitarError(page, self.respuesta), mensaje.validarNombres(self.respuesta, page)])
+        self.respuesta = TextField(label="Respuesta", hint_text=mensaje.minimoCaracteres(3), max_length=20, capitalization=TextCapitalization.SENTENCES, border_color="#820000", border_radius=20, width=280, height=60, on_change=lambda _: [mensaje.quitarError(page, self.respuesta), validaciones.validarCamposNot(self.respuesta, page, False, validaciones.condicionNombres)])
         self.nivelUser = Dropdown(hint_text="Cargo", color="black",border_color="#820000", border_radius=20, width=280, height=60, on_change=lambda _: mensaje.quitarError(page, self.nivelUser), options=[
                 dropdown.Option("Lider de Calle"), dropdown.Option("Lider Politico")])
 

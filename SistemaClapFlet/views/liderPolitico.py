@@ -10,10 +10,11 @@ import shutil
 
 import modelo.reporte
 
-from controlador.mensajes import mensaje
+from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas
+from modelo.consultas import consulta
 from gestores.gestorLiderPolitico import *
-from gestores.gestorLiderPolitico import bloqueoUsuario, revelarContrasena, gestionPrincipal, preciosCilindros, editarDatosUsuario, bitacora, archivos, caracteristicasCilindro, datosUsuario, generarCartas
+from gestores.gestorLiderPolitico import bloqueoUsuario, revelarContrasena, gestionPrincipal, preciosCilindros, editarDatosUsuario, bitacora, archivos, caracteristicasCilindro, datosUsuario, generarCartas, historial
 
 class liderPolitico:
     def __init__(self):       
@@ -33,14 +34,11 @@ class liderPolitico:
 
         self.check = Checkbox(on_change=lambda _:bloqueoUsuario.estatusUsuario(page))
 
-        self.entryEmpresa = TextField(label=mensaje.empresa, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryEmpresa), mensaje.validarNombres(self.entryEmpresa, page)])
-        self.entryTamano = TextField(label=mensaje.tamano, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryTamano), mensaje.validarNombres(self.entryTamano, page)])
-        self.entryPico = TextField(label=mensaje.pico, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryPico), mensaje.validarNombres(self.entryPico, page)])
+        self.entryEmpresa = TextField(label=mensaje.empresa, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryEmpresa), validaciones.validarCamposNot(self.entryEmpresa, page, True, validaciones.condicionAlfanumericos)])
+        self.entryTamano = TextField(label=mensaje.tamano, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryTamano), validaciones.validarCamposNot(self.entryTamano, page, False, validaciones.condicionNombres)])
+        self.entryPico = TextField(label=mensaje.pico, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryPico), validaciones.validarCamposNot(self.entryPico, page, False, validaciones.condicionNombres)])
 
-        self.entryComunidad = TextField(label="Comunidad", hint_text="Minimo 4 caracteres", max_length=30, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryComunidad), mensaje.validarNombres(self.entryComunidad, page)])
-        self.entryVereda = TextField(label=r"Vereda\Calle", hint_text="", max_length=30, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryVereda), mensaje.validarNombres(self.entryVereda, page)])
-        self.cantidadVerdas = TextField(label=r"Cantidad de Vereda\Calle", hint_text="", max_length=2, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.cantidadVerdas), mensaje.validarNumeros(self.entryComunidad, page)])
-        self.cantidadVerdas.value = "1"
+        self.entryComunidad = TextField(label="Comunidad", hint_text="Minimo 4 caracteres", max_length=30, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryComunidad), validaciones.validarCamposNot(self.entryComunidad, page, True, validaciones.condicionAlfanumericos)])
 
         page.title = "CLAP"
         page.window_maximizable = False
@@ -66,7 +64,7 @@ class liderPolitico:
         
         self.codigoTelefono = Dropdown(hint_text="Codigo", visible=False, color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.codigoTelefono), options=[
                 dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
-        self.numeroTelefono = TextField(label="N telefono", visible=False, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, self.numeroTelefono), mensaje.validarNumeros(self.numeroTelefono, page)])
+        self.numeroTelefono = TextField(label="N telefono", visible=False, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, self.numeroTelefono), validaciones.validarCamposNot(self.numeroTelefono, page, True, validaciones.condicionNumeros)])
         self.correoCambiar = TextField(label="Direccion", visible=False, hint_text="ej: clapcamoruco", max_length=50, border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _: mensaje.quitarError(page, self.correo))
         self.tipoCorreo = Dropdown(hint_text="Correo", visible=False, color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCorreo), options=[
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com"), dropdown.Option("@outlook.com")])
@@ -547,7 +545,7 @@ class liderPolitico:
                                             spacing=20,
                                             controls=[
                                                 ElevatedButton("Regresar", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarTitulo(page, self.titulo, "Lideres de Calle"), revelarContrasena.regresarPassFalse(page, self.contrasena)]),
-                                                ElevatedButton("Ver Jornadas", bgcolor="Green", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorHistorial, self.contenedorHistorial, page), mensaje.cambiarTitulo(page, self.titulo, "Administrador de jornadas"), archivos.volverGenerarArchivos(page)])
+                                                ElevatedButton("Ver Jornadas", bgcolor="Green", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorHistorial, self.contenedorHistorial, page), mensaje.cambiarTitulo(page, self.titulo, "Administrador de jornadas"), archivos.volverGenerarArchivos(page, consulta.obtenerArchivosId, self.cedula.value, self.tablaSeleccionarHistorial, historial.abrirHistorial)])
                                             ]
                                         ),
                                         ElevatedButton("Ver bitacora", on_click=lambda _: [rutas.animar(self.formulario, self.formularioBitacora, self.formularioBitacora, page), mensaje.cambiarTitulo(page, self.titulo, "Historial de Inicios de sesion"), bitacora.volverGenerarBitacora(page, self.cedula)])

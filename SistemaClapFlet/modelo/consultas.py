@@ -55,7 +55,7 @@ class consulta:
     editarCilindro = "SELECT empresas.empresa, tamanos.tamano, picos.pico FROM cilindros JOIN empresas ON empresas_id = empresas.id JOIN tamanos ON tamanos_id = tamanos.id JOIN picos ON picos_id = picos.id WHERE Cilindros.id = ?"
     guardarCambioCilindro = "UPDATE cilindros SET empresas_id =?, picos_id =?, tamanos_id =? WHERE id = ?"
     eliminarCilindroJornadaJefe = "DELETE FROM pedidos WHERE id =?"
-    mostrarDatosJefe = "SELECT jefesf.nombre, jefesf.apellido, jefesf.ci, jefesf.telefono, jefesf.correo, lideres.ubicacion FROM jefesf JOIN lideres ON lideres_id = lideres.id  WHERE jefesf.id = ?"
+    mostrarDatosJefe = "SELECT jefesf.nombre, jefesf.apellido, jefesf.ci, jefesf.telefono, jefesf.correo, lideres.ubicacion, jefesf.lideres_id, jefesf.estatus FROM jefesf JOIN lideres ON lideres_id = lideres.id  WHERE jefesf.id = ?"
     actualizarNombreJefe = "UPDATE jefesf SET nombre = ? WHERE id = ?"
     actualizarApellidoJefe = "UPDATE jefesf SET apellido = ? WHERE id = ?"
 
@@ -65,7 +65,7 @@ class consulta:
     actualizarTelefonoJefe = "UPDATE jefesf SET telefono = ? WHERE id = ?"
     obtenerReportesPedidos = "SELECT pedidos.id, jefesf.ci, jefesf.nombre, jefesf.apellido, empresas.empresa, tamanos.tamano, picos.pico, pedidos.fechaAgregada FROM pedidos JOIN cilindros ON cilindros_id = cilindros.id JOIN jefesf ON jefesf_id = jefesf.id JOIN empresas ON empresas_id = empresas.id JOIN tamanos ON tamanos_id = tamanos.id JOIN picos ON picos_id = picos.id JOIN lideres ON lideres_id = lideres.id WHERE lideres.id =? AND pedidos.archivos_id IS NULL ORDER BY jefesf.ci ASC"
     eliminarCilindroJornada = "DELETE FROM pedidos WHERE id =?"
-    mostrarDatosLider = "SELECT lideres.nombre, lideres.apellido, lideres.cedula, lideres.telefono, lideres.correo, lideres.ubicacion FROM lideres WHERE lideres.id = ?"
+    mostrarDatosLider = "SELECT lideres.nombre, lideres.apellido, lideres.cedula, lideres.telefono, lideres.correo, lideres.ubicacion, usuarios.usuario, usuarios.contrasena, usuarios.nivel, usuarios.estatus, preguntas.pregunta, respuestas.respuesta FROM usuarios JOIN lideres ON usuarios.lideres_id = lideres.id JOIN respuestas ON usuarios.respuesta_id = respuestas.id JOIN preguntas ON respuestas.preguntas_id = preguntas.id WHERE lideres.id = ?"
     actualizarNombreLider = "UPDATE lideres SET nombre = ? WHERE id = ?"
     actualizarApellidoLider = "UPDATE lideres SET apellido = ? WHERE id = ?"
     verificarTelefonoLider = "SELECT lideres.nombre, lideres.apellido FROM lideres WHERE lideres.telefono = ?"

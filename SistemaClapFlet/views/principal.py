@@ -11,7 +11,7 @@ import shutil
 
 import modelo.reporte
 
-from controlador.mensajes import mensaje
+from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas
 from gestores.gestorPincipal import *
 from gestores.gestorPincipal import regresarAtras, reporteJornada, archivoPdf, editarDatosLiderCalle, editarDatosJefeFamilia, gestionPrincipal, cartasJefesFamilia, registrarJefeFamiliaCilindros, crudCilindros
@@ -63,12 +63,12 @@ class principal:
         self.tituloAgregarJefes = Text(mensaje.mensajeSinJefesFamilia, style=TextThemeStyle.TITLE_LARGE)
 
         #TEXTFIELDS REGISTRO
-        self.nombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.nombre), mensaje.validarNombres(self.nombre, page)])
-        self.apellido = TextField(label=mensaje.apellido, hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.apellido), mensaje.validarNombres(self.apellido, page)])
+        self.nombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.nombre), validaciones.validarCamposNot(self.nombre, page, False, validaciones.condicionNombres)])
+        self.apellido = TextField(label=mensaje.apellido, hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.apellido), validaciones.validarCamposNot(self.apellido, page, False, validaciones.condicionNombres)])
         self.tipoCedula = Dropdown(label=mensaje.tipo, color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCedula), options=[
                 dropdown.Option("V"), dropdown.Option("E")])
         self.tipoCedula.value = "V"
-        self.cedula = TextField(label=mensaje.cedula, hint_text=mensaje.minimoCaracteres(7), border_color="#820000", border_radius=20, width=180, height=60, max_length=8, on_change=lambda _: [mensaje.quitarError(page, self.cedula), mensaje.validarNumeros(self.cedula, page)])
+        self.cedula = TextField(label=mensaje.cedula, hint_text=mensaje.minimoCaracteres(7), border_color="#820000", border_radius=20, width=180, height=60, max_length=8, on_change=lambda _: [mensaje.quitarError(page, self.cedula), validaciones.validarCamposNot(self.cedula, page, True, validaciones.condicionNumeros)])
         self.cantidadCi = Dropdown(label=mensaje.cantidadCilindros, border_radius=30, border_color="#820000", width=300, height=60, value=0, on_change=lambda _: [self.generarCasillasCilindro(page), mensaje.quitarError(page, self.cantidadCi)], options=[
                 dropdown.Option("1"), dropdown.Option("2"), dropdown.Option("3"),
                 dropdown.Option("4"), dropdown.Option("5"), dropdown.Option("6"),
@@ -78,8 +78,8 @@ class principal:
 
         self.codigoTelefono = Dropdown(hint_text=mensaje.codigoTelefono, color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.codigoTelefono), options=[
                 dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
-        self.numeroTelefono = TextField(label=mensaje.nTelefono, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, self.numeroTelefono), mensaje.validarNumeros(self.numeroTelefono, page)])
-        self.correo = TextField(label=mensaje.correo, hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, self.correo), mensaje.validarCorreo(self.correo, page)])
+        self.numeroTelefono = TextField(label=mensaje.nTelefono, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, self.numeroTelefono), validaciones.validarCamposNot(self.numeroTelefono, page, True, validaciones.condicionNumeros)])
+        self.correo = TextField(label=mensaje.correo, hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, self.correo), validaciones.validarCamposIn(self.correo, page, validaciones.condicinCorreo)])
         self.tipoCorreo = Dropdown(hint_text=mensaje.tipoCorreo, color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCorreo), options=[
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com"), dropdown.Option("@outlook.com")])
 
@@ -250,7 +250,6 @@ class principal:
                                             ]
                                         )
                                     ),
-
                                     Container(
                                         margin=margin.only(top=20),
                                         padding=padding.only(left=35),

@@ -14,7 +14,8 @@ class gestionRegister:
         arregloTelefono = f"{codigoTelefono.value}-{numTelefono.value}"
         global nuevoLider
 
-        if (nombre.value == "") or (apellido.value == "") or (cedula.value == "") or (numTelefono.value == "") or (correo.value == "") or (ubicacion.value == "") or (nivelUser.value == None) or (tipoCorreo.value == None) or (codigoTelefono.value == None) or (len(nombre.value) in range(1, 3)) or (len(apellido.value) in range(1, 4)) or (len(cedula.value) in range(1, 7)) or (len(numTelefono.value) in range(1, 7)) or (len(ubicacion.value) in range(1, 3)):
+        listaCondicion = [nombre.value, apellido.value, cedula.value, numTelefono.value, correo.value, ubicacion.value, nivelUser.value, tipoCorreo.value, codigoTelefono.value]
+        if ("" or None) in listaCondicion or (len(nombre.value) in range(1, 3)) or (len(apellido.value) in range(1, 4)) or (len(cedula.value) in range(1, 7)) or (len(numTelefono.value) in range(1, 7)) or (len(ubicacion.value) in range(1, 3)):
             #VALIDA TODOS LOS CAMPOS VACIOS, MEJORA IMPLEMENTADA
             for control in (nombre, apellido, cedula, numTelefono, correo, ubicacion):
                 if not control.value:
@@ -68,7 +69,8 @@ class gestionRegister:
     #VALIDA LA 2 SECCION DEL FORMULARIO LA CUAL PIDE LA CONTRASENA Y EL USUARIO
     def formulario2(page, usuario, contrasena, confirmarContrasena, formulario, contenedor1, contenedor2, nivelUser):
         global nuevoUsuario
-        if (usuario.value == "") or (contrasena.value == "") or (confirmarContrasena.value == "") or (len(usuario.value) in range(1, 5)) or (len(contrasena.value) in range(1, 6)):
+        listaCondicion = [usuario.value, contrasena.value, confirmarContrasena.value]
+        if "" in listaCondicion or (len(usuario.value) in range(1, 5)) or (len(contrasena.value) in range(1, 6)):
 
             for control in (usuario, contrasena, confirmarContrasena):
                 if not control.value:

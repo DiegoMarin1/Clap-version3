@@ -51,6 +51,8 @@ class mensaje:
     tituloComunidad = "Mi Comunidad"
     mensajeSinJefesFamilia = "No tienes a ningun Jefe de Familia resgistrado, pusla agregar para añadir a los jefes familiares"
     cantidadCilindros = "Cantidad de cilindros"
+    def cambiarNombreTitulo(mensaje):
+        return f"Cilindros de {mensaje}"
 
     #LIDER POLITICO
     anadirNuevaEmpresa = "Añade una nueva empresa"
@@ -95,76 +97,43 @@ class mensaje:
         widget.value = titulo
         page.update()
 
-    def validarNumeros(campo, pagee):
+class validaciones:
+    #CONDICIONES
+    condicionNumeros = "0123456789"
+    condicionAlfanumericos = "0123456789 qwertyuiopasdfghjklzxcvbnmñQWERTYUIOPASDFGHJKLZXCVBNMÑ"
+    condicionNombres = "qwertyuiopasdfghjklzxcvbnmñQWERTYUIOPASDFGHJKLZXCVBNMÑ,"
+    condicinCorreo = r" @!#$%^&*()_-=+][}{\|';:<>/?`~.,´´¿¡"
+    condicionEspacios = " "
+    
+    def validarCamposNot(campo, pagee, valor, condicion):
         digitos = campo.value
-
-        if digitos.isdigit():
+        #PARA NUMEROS Y LETRAS
+        if valor == True and digitos.isdigit():
+            pass
+        #PARA NOMBRES
+        if valor == False and digitos.isalpha():
             pass
         else:
             for i in digitos:
-                if i not in "0123456789":
+                if i not in condicion:
                     digitos = digitos.replace(i, "", 1)
 
             campo.value = digitos
             pagee.update()
 
-    def validarAlfanumeros(campo, pagee):
-        digitos = campo.value
-
-        if digitos.isdigit():
-            pass
-        else:
-            for i in digitos:
-                if i not in "0123456789 qwertyuiopasdfghjklzxcvbnmñQWERTYUIOPASDFGHJKLZXCVBNMÑ":
-                    digitos = digitos.replace(i, "", 1)
-
-            campo.value = digitos
-            pagee.update()
-
-    def validarNombres(campo, pagee):
-        digitos = campo.value
-
-        if digitos.isalpha():
-            pass
-        else:
-            for i in digitos:
-                if i not in "qwertyuiopasdfghjklzxcvbnmñQWERTYUIOPASDFGHJKLZXCVBNMÑ,":
-                    digitos = digitos.replace(i, "", 1)
-
-            campo.value = digitos
-            pagee.update()
-
-    def validarCorreo(campo, pagee):
+    def validarCamposIn(campo, pagee, condicion):
         digitos = campo.value
 
         if digitos.isspace():
             for i in digitos:
-                if i in r" @!#$%^&*()_-=+][}{\|';:<>/?`~":
+                if i in condicion:
                     digitos = digitos.replace(i, "", 1)
 
                     campo.value = digitos
                     pagee.update()
         else:
             for i in digitos:
-                if i in r" @!#$%^&*()_-=+][}{\|';:<>/?`~":
-                    digitos = digitos.replace(i, "", 1)
-
-            campo.value = digitos
-            pagee.update()
-
-    def validarEspacio(campo, pagee):
-        digitos = campo.value
-
-        if digitos.isspace():
-            for i in digitos:
-                if i in " ":
-                    digitos = digitos.replace(i, "", 1)
-
-                    campo.value = digitos
-                    pagee.update()
-        else:
-            for i in digitos:
-                if i in " ":
+                if i in condicion:
                     digitos = digitos.replace(i, "", 1)
 
             campo.value = digitos
