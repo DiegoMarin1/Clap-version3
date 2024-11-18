@@ -2,12 +2,12 @@ from flet import ScrollMode, Container, Text, SnackBar, Dropdown, dropdown, alig
 from controlador.conexion import db
 from controlador.rutas import rutas
 from controlador.mensajes import mensaje, validaciones
-from modelo.modelPrincipal import * 
+from modelo.modelPrincipal import lider, jefeFamiliar
 from modelo.consultas import consulta
 
 import modelo.reporte
 from modelo.reporte import *
-from modelo.modelLiderPolitico import UsuarioSistema
+from modelo.modelPrincipal import lider
 
 import os
 import pathlib
@@ -149,20 +149,21 @@ class generarCartas:
 #PARA CARGAR LOS DATOS DEL USUARIO QUE INCIO SECCION
 class formularioUsuarioLiderCalle:
     def generarJefe(ids, page):
-        global datosUsuarioLiderCalle
+        
         resultadoUsuario = db.consultaConRetorno(consulta.obtenerDatosUsuarioLideresCalle, [ids,])
-        datosUsuarioLiderCalle = UsuarioSistema(resultadoUsuario[0][0], resultadoUsuario[0][1], resultadoUsuario[0][2], resultadoUsuario[0][3], resultadoUsuario[0][4], resultadoUsuario[0][5], resultadoUsuario[0][6], resultadoUsuario[0][7], resultadoUsuario[0][8], resultadoUsuario[0][9])
+        datosUsuarioLiderCalle = lider(resultadoUsuario[0][2], resultadoUsuario[0][0], resultadoUsuario[0][1], resultadoUsuario[0][8], resultadoUsuario[0][9], resultadoUsuario[0][3], resultadoUsuario[0][6], resultadoUsuario[0][7], resultadoUsuario[0][10], resultadoUsuario[0][9], resultadoUsuario[0][4], resultadoUsuario[0][5])
 
-        gestionPrincipal.nombre.value = f"{resultadoUsuario[0][0]}"
-        gestionPrincipal.apellido.value = f"{resultadoUsuario[0][1]}"
-        gestionPrincipal.cedula.value = f"{resultadoUsuario[0][2]}"
-        gestionPrincipal.ubicacion.value = f"{resultadoUsuario[0][3]}"
-        gestionPrincipal.pregunta.value = f"{resultadoUsuario[0][4]}"
-        gestionPrincipal.respuesta.value = f"{resultadoUsuario[0][5]}"
-        gestionPrincipal.usuario.value = f"{resultadoUsuario[0][6]}"
-        gestionPrincipal.contrasena.value = f"{resultadoUsuario[0][7]}"
-        gestionPrincipal.telefono.value = f"{resultadoUsuario[0][8]}"
-        gestionPrincipal.correo.value = f"{resultadoUsuario[0][9]}"
+        gestionPrincipal.nombre.value = f"{datosUsuarioLiderCalle.nombre}"
+        gestionPrincipal.apellido.value = f"{datosUsuarioLiderCalle.apellido}"
+        gestionPrincipal.cedula.value = f"{datosUsuarioLiderCalle.cedula}"
+        gestionPrincipal.ubicacion.value = f"{datosUsuarioLiderCalle.ubicacion}"
+        gestionPrincipal.pregunta.value = f"{datosUsuarioLiderCalle.pregunta}"
+        gestionPrincipal.respuesta.value = f"{datosUsuarioLiderCalle.respuesta}"
+        gestionPrincipal.usuario.value = f"{datosUsuarioLiderCalle.get_usuario()}"
+        gestionPrincipal.contrasena.value = f"{datosUsuarioLiderCalle.get_contrasena()}"
+        gestionPrincipal.telefono.value = f"{datosUsuarioLiderCalle.telefono}"
+        gestionPrincipal.correo.value = f"{datosUsuarioLiderCalle.correo}"
+
         if resultadoUsuario[0][10] == 1:
             gestionPrincipal.estatus.value = "Habilitado"
             gestionPrincipal.check.value = False

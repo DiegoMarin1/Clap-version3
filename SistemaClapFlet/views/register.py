@@ -459,7 +459,7 @@ class register:
         pagee = pagee
         contenedor1 = contenedor1
         contenedor2 = contenedor2
-        gestionRegister.formulario2(pagee, self.usuario, self.contrasena, self.confirmarContrasena, self.formulario, contenedor1, contenedor2, self.nivelUser)
+        gestionRegister.formulario2(pagee, self.usuario, self.contrasena, self.confirmarContrasena, self.formulario, contenedor1, contenedor2)
 
     def gestionar3(self, pagee):
         pagee = pagee

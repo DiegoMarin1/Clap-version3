@@ -90,7 +90,7 @@ class consulta:
     #LIDER POLITICO
     obtenerDatosLiderPolitico = "SELECT lideres.nombre, lideres.apellido, lideres.cedula, lideres.ubicacion, preguntas.pregunta, respuestas.respuesta, usuarios.usuario, usuarios.contrasena, lideres.telefono, lideres.correo FROM usuarios JOIN respuestas ON respuesta_id = respuestas.id JOIN preguntas ON preguntas_id = preguntas.id JOIN lideres ON lideres_id = lideres.id WHERE lideres.id = ?"
     obtenerTodosUsuarios = "SELECT lideres.nombre, lideres.apellido, lideres.cedula, lideres.id FROM usuarios JOIN lideres ON lideres_id = lideres.id WHERE usuarios.nivel = 2"
-    obtenerDatosUsuarioLideresCalle = "SELECT lideres.nombre, lideres.apellido, lideres.cedula, lideres.ubicacion, preguntas.pregunta, respuestas.respuesta, usuarios.usuario, usuarios.contrasena, lideres.telefono, lideres.correo, usuarios.estatus FROM usuarios JOIN respuestas ON respuesta_id = respuestas.id JOIN preguntas ON preguntas_id = preguntas.id JOIN lideres ON lideres_id = lideres.id WHERE lideres.id = ?"
+    obtenerDatosUsuarioLideresCalle = "SELECT lideres.nombre, lideres.apellido, lideres.cedula, lideres.ubicacion, preguntas.pregunta, respuestas.respuesta, usuarios.usuario, usuarios.contrasena, lideres.telefono, lideres.correo, usuarios.estatus, usuarios.nivel FROM usuarios JOIN respuestas ON respuesta_id = respuestas.id JOIN preguntas ON preguntas_id = preguntas.id JOIN lideres ON lideres_id = lideres.id WHERE lideres.id = ?"
     actualizarEstatusUsuario = "UPDATE usuarios SET estatus = ? WHERE usuario = ?"
     actualizarPrecios = "UPDATE tamanos SET costo =? WHERE id = ?"
     verificarEmpresa = "SELECT empresa FROM empresas WHERE empresa = ?"
