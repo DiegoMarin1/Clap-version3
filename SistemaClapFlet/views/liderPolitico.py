@@ -9,6 +9,7 @@ import pathlib
 import shutil
 
 import modelo.reporte
+from modelo.modelVista import appBar
 
 from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas
@@ -47,7 +48,6 @@ class liderPolitico:
         page.window_width = "1000"
         page.window_center()
 
-        self.titulo = Text("Lideres de Calle", style=TextThemeStyle.TITLE_LARGE, color="white")
         self.textoSlider = Text(f"{self.nombreLiderCalle}", weight=FontWeight.W_500, color="WHITE")
 
         self.nombreLi = Text("")
@@ -120,19 +120,8 @@ class liderPolitico:
         self.listaBitacora = ListView(width=400, height=550, spacing=20)
 
         #APP BAR
-        self.appbar = Container(
-            bgcolor="#C5283D",
-            border_radius=border_radius.all(15),
-            height=100,
-            content=Row(
-                alignment=MainAxisAlignment.SPACE_BETWEEN,
-                controls=[
-                    Container(padding=padding.only(left=10) ,content=self.logo),
-                    self.titulo,
-                    PopupMenuButton(items=[PopupMenuItem(text="Cerrar seccion", on_click=lambda _: gestionPrincipal.volverLogin(page, self.indicator))])
-                ]
-            )
-        )
+        self.appbar = appBar(page, self.indicator, self.logo)
+        self.appbar.cambiarTitulo(mensaje.tituloComunidad)
 
         #SLIDER
         self.slider = Container(
@@ -182,7 +171,7 @@ class liderPolitico:
                                         padding=padding.only(left=35),
                                         offset=Offset(x=None, y=None),
                                         data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), mensaje.cambiarTitulo(page, self.titulo, "Lideres de Calle")],
+                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo("Lideres de Calle")],
                                         content=Row(
                                             controls=[
                                                 Icon(name=icons.HOME),
@@ -195,7 +184,7 @@ class liderPolitico:
                                         margin=margin.only(top=20),
                                         padding=padding.only(left=35),
                                         data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorBombonas, self.contenedorBombonas, page), mensaje.cambiarPagina(self.indicator, 6.8), mensaje.cambiarTitulo(page, self.titulo, "Gestion de Bombonas")],
+                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorBombonas, self.contenedorBombonas, page), mensaje.cambiarPagina(self.indicator, 6.8), self.appbar.cambiarTitulo("Gestion de Bombonas")],
                                         content=Row(
                                             controls=[
                                                 Icon(name=icons.EVENT_NOTE),
@@ -209,7 +198,7 @@ class liderPolitico:
                                         padding=padding.only(left=35),
                                         offset=Offset(x=None, y=None),
                                         data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorPerfil, self.contenedorPerfil, page), mensaje.cambiarPagina(self.indicator, 8.2), mensaje.cambiarTitulo(page, self.titulo, "Tu Perfil"), revelarContrasena.regresarPassFalse(page, self.contrasena)],
+                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorPerfil, self.contenedorPerfil, page), mensaje.cambiarPagina(self.indicator, 8.2), self.appbar.cambiarTitulo("Tu Perfil"), revelarContrasena.regresarPassFalse(page, self.contrasena)],
                                         content=Row(
                                             controls=[
                                                 Icon(name=icons.PEOPLE),
@@ -372,8 +361,8 @@ class liderPolitico:
                                             alignment=MainAxisAlignment.CENTER,
                                             spacing=20,
                                             controls=[
-                                                ElevatedButton("Regresar", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), mensaje.cambiarTitulo(page, self.titulo, "Lideres de Calle"), revelarContrasena.regresarPassFalse(page, self.contrasenaP)]),
-                                                ElevatedButton("Ver tu bitacora", on_click=lambda _: [rutas.animar(self.formulario, self.formularioBitacora, self.formularioBitacora, page), mensaje.cambiarTitulo(page, self.titulo, "Historial de Inicios de sesion"), bitacora.volverGenerarBitacora(page, self.cedulaLi)])
+                                                ElevatedButton("Regresar", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo("Lideres de Calle"), revelarContrasena.regresarPassFalse(page, self.contrasenaP)]),
+                                                ElevatedButton("Ver tu bitacora", on_click=lambda _: [rutas.animar(self.formulario, self.formularioBitacora, self.formularioBitacora, page), self.appbar.cambiarTitulo("Historial de Inicios de sesion"), bitacora.volverGenerarBitacora(page, self.cedulaLi)])
                                             ]
                                         ),
                                     ]
@@ -413,7 +402,7 @@ class liderPolitico:
 
                     Row(
                         controls=[
-                            ElevatedButton("Regresar", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), mensaje.cambiarTitulo(page, self.titulo, "Mi Comunidad")])
+                            ElevatedButton("Regresar", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo("Mi Comunidad")])
                         ]
                     ),
                 ]
@@ -544,11 +533,11 @@ class liderPolitico:
                                             alignment=MainAxisAlignment.CENTER,
                                             spacing=20,
                                             controls=[
-                                                ElevatedButton("Regresar", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarTitulo(page, self.titulo, "Lideres de Calle"), revelarContrasena.regresarPassFalse(page, self.contrasena)]),
-                                                ElevatedButton("Ver Jornadas", bgcolor="Green", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorHistorial, self.contenedorHistorial, page), mensaje.cambiarTitulo(page, self.titulo, "Administrador de jornadas"), archivos.volverGenerarArchivos(page, consulta.obtenerArchivosId, self.cedula.value, self.tablaSeleccionarHistorial, historial.abrirHistorial)])
+                                                ElevatedButton("Regresar", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), self.appbar.cambiarTitulo("Lideres de Calle"), revelarContrasena.regresarPassFalse(page, self.contrasena)]),
+                                                ElevatedButton("Ver Jornadas", bgcolor="Green", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorHistorial, self.contenedorHistorial, page), self.appbar.cambiarTitulo("Administrador de jornadas"), archivos.volverGenerarArchivos(page, consulta.obtenerArchivosId, self.cedula.value, self.tablaSeleccionarHistorial, historial.abrirHistorial)])
                                             ]
                                         ),
-                                        ElevatedButton("Ver bitacora", on_click=lambda _: [rutas.animar(self.formulario, self.formularioBitacora, self.formularioBitacora, page), mensaje.cambiarTitulo(page, self.titulo, "Historial de Inicios de sesion"), bitacora.volverGenerarBitacora(page, self.cedula)])
+                                        ElevatedButton("Ver bitacora", on_click=lambda _: [rutas.animar(self.formulario, self.formularioBitacora, self.formularioBitacora, page), self.appbar.cambiarTitulo("Historial de Inicios de sesion"), bitacora.volverGenerarBitacora(page, self.cedula)])
                                     ]
                                 )
                             ]
@@ -572,7 +561,7 @@ class liderPolitico:
                 horizontal_alignment=CrossAxisAlignment.CENTER,
                 controls=[
                     self.listaBitacora,
-                    ElevatedButton("Regresar", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarTitulo(page, self.titulo, "Lideres de Calle"), mensaje.cambiarPagina(self.indicator, 5.5), bitacora.regresarViewFalse(page)]),
+                    ElevatedButton("Regresar", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), self.appbar.cambiarTitulo("Lideres de Calle"), mensaje.cambiarPagina(self.indicator, 5.5), bitacora.regresarViewFalse(page)]),
                 ]
             )
         )
@@ -639,7 +628,7 @@ class liderPolitico:
     def pasarWidget(self):
         gestionPrincipal.obtenerWidget(self.formulario, self.nombre, self.apellido, self.cedula, self.estatus, self.contrasena, self.usuario, 
         self.pregunta, self.respuesta, self.ubicacion, self.telefono, self.correo, self.columnaCards, 
-        self.titulo, self.contenedorInicio, self.contenedorHistorial, self.formularioBitacora, self.formularioLiderCalle, self.contenedorBombonas, 
+        self.contenedorInicio, self.contenedorHistorial, self.formularioBitacora, self.formularioLiderCalle, self.contenedorBombonas, 
         self.contenedorPerfil, self.listaBitacora, self.nombreLi, self.apellidoLi, self.cedulaLi, self.ubicacionLi, 
         self.telefonoLi, self.correoLi, self.preguntaP, self.respuestaP, self.usuarioP, self.contrasenaP, 
-        self.tablaLlenarHistorial, self.tablaSeleccionarHistorial, self.check, self.btnCandado, self.btnCandadoP)
+        self.tablaLlenarHistorial, self.tablaSeleccionarHistorial, self.check, self.btnCandado, self.btnCandadoP, self.appbar)

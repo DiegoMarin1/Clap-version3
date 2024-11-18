@@ -4,6 +4,7 @@ from flet import View, AnimatedSwitcher, AnimatedSwitcherTransition, ScrollMode,
 from flet_route import Params, Basket
 from datetime import datetime
 from time import sleep
+from modelo.modelVista import appBar
 
 import os
 import pathlib
@@ -169,19 +170,9 @@ class principal:
         )
 
         #APP BAR
-        self.appbar = Container(
-            bgcolor="#C5283D",
-            border_radius=border_radius.all(15),
-            height=100,
-            content=Row(
-                alignment=MainAxisAlignment.SPACE_BETWEEN,
-                controls=[
-                    Container(padding=padding.only(left=10) ,content=self.logo),
-                    self.titulo,
-                    PopupMenuButton(items=[PopupMenuItem(text=mensaje.cerrarSeccion, on_click=lambda _: regresarAtras.volverLogin(page, self.indicator))])
-                ]
-            )
-        )
+        
+        self.appbar = appBar(page, self.indicator, self.logo)
+        self.appbar.cambiarTitulo(mensaje.tituloComunidad)
 
         #SLIDER
         self.slider = Container(
@@ -229,7 +220,7 @@ class principal:
                                         margin=margin.only(top=50),
                                         padding=padding.only(left=35),
                                         data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), mensaje.cambiarTitulo(page, self.titulo, "Mi Comunidad")],
+                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo("Mi Comunidad")],
                                         content=Row(
                                             controls=[
                                                 Icon(name=icons.HOME),
@@ -242,7 +233,7 @@ class principal:
                                         margin=margin.only(top=20),
                                         padding=padding.only(left=35),
                                         data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorReporte, self.contenedorReporte, page), mensaje.cambiarPagina(self.indicator, 6.8), reporteJornada.volverGenerarJornada(page, self.iDLiderCalle), mensaje.cambiarTitulo(page, self.titulo, "Administrador de Jornada")],
+                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorReporte, self.contenedorReporte, page), mensaje.cambiarPagina(self.indicator, 6.8), reporteJornada.volverGenerarJornada(page, self.iDLiderCalle), self.appbar.cambiarTitulo("Administrador de Jornada")],
                                         content=Row(
                                             controls=[
                                                 Icon(name=icons.EDIT_NOTE),
@@ -254,7 +245,7 @@ class principal:
                                         margin=margin.only(top=20),
                                         padding=padding.only(left=35),
                                         data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorHistorial, self.contenedorHistorial, page), mensaje.cambiarPagina(self.indicator, 8.2), archivoPdf.volverGenerarArchivos(page), mensaje.cambiarTitulo(page, self.titulo, "Historial de jornadas")],
+                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorHistorial, self.contenedorHistorial, page), mensaje.cambiarPagina(self.indicator, 8.2), archivoPdf.volverGenerarArchivos(page), self.appbar.cambiarTitulo("Historial de jornadas")],
                                         content=Row(
                                             controls=[
                                                 Icon(name=icons.EVENT_NOTE),
@@ -266,7 +257,7 @@ class principal:
                                         margin=margin.only(top=20),
                                         padding=padding.only(left=35),
                                         data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorPerfilLider, self.contenedorPerfilLider, page), editarDatosLiderCalle.cargarDatosLider(page), mensaje.cambiarPagina(self.indicator, 9.5), mensaje.cambiarTitulo(page, self.titulo, "Mis datos")],
+                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorPerfilLider, self.contenedorPerfilLider, page), editarDatosLiderCalle.cargarDatosLider(page), mensaje.cambiarPagina(self.indicator, 9.5), self.appbar.cambiarTitulo("Mis datos")],
                                         content=Row(
                                             controls=[
                                                 Icon(name=icons.PEOPLE),
@@ -299,7 +290,7 @@ class principal:
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                         controls=[
                             Text(""),
-                            ElevatedButton("Agregar", bgcolor="GREEN", color="WHITE",on_click= lambda _: [rutas.animar(self.formulario, self.formularioJefe, self.formularioJefe, page), mensaje.cambiarTitulo(page, self.titulo, "Datos Personales del Jefe de Familia")])
+                            ElevatedButton("Agregar", bgcolor="GREEN", color="WHITE",on_click= lambda _: [rutas.animar(self.formulario, self.formularioJefe, self.formularioJefe, page), self.appbar.cambiarTitulo("Datos Personales del Jefe de Familia")])
                         ]
                     ),
 
@@ -348,7 +339,7 @@ class principal:
 
                     Row(
                         controls=[
-                            ElevatedButton(mensaje.regresarBtn, bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), mensaje.cambiarTitulo(page, self.titulo, "Mi Comunidad")]),
+                            ElevatedButton(mensaje.regresarBtn, bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo("Mi Comunidad")]),
                             ElevatedButton("Generar Reporte",bgcolor="GREEN", color="WHITE", on_click=lambda _:reporteJornada.confirmarReporte(page, self.indicator))
                         ]
                     ),
@@ -384,7 +375,7 @@ class principal:
 
                     Row(
                         controls=[
-                            ElevatedButton(mensaje.regresarBtn, bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), mensaje.cambiarTitulo(page, self.titulo, "Mi Comunidad")])
+                            ElevatedButton(mensaje.regresarBtn, bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo("Mi Comunidad")])
                         ]
                     ),
                 ]
@@ -554,7 +545,7 @@ class principal:
                                         IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: editarDatosLiderCalle.editCorreoLi(page))
                                     ]
                                 ),
-                                ElevatedButton("Regresar a inicio", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), mensaje.cambiarTitulo(page, self.titulo, "Mi Comunidad")]),
+                                ElevatedButton("Regresar a inicio", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo("Mi Comunidad")]),
                             ]
                         )
                     )
@@ -620,7 +611,7 @@ class principal:
                                     alignment=MainAxisAlignment.CENTER,
                                     spacing=20,
                                     controls=[
-                                        ElevatedButton(mensaje.regresarBtn, bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ self.regresarJefesFamiliaInicio(page), mensaje.cambiarTitulo(page, self.titulo, "Mi Comunidad")]),
+                                        ElevatedButton(mensaje.regresarBtn, bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ self.regresarJefesFamiliaInicio(page), self.appbar.cambiarTitulo("Mi Comunidad")]),
                                         ElevatedButton("Seguir",bgcolor="GREEN", color="WHITE", on_click=lambda _: self.accionBtnFormularioJefeFamilia(page))
                                     ]
                                 )
@@ -644,7 +635,7 @@ class principal:
                 controls=[
                     self.columnaContenedor,
                     ElevatedButton("Guardar", bgcolor="GREEN", color="#ffffff",  on_click=lambda _:self.accionBtnFormularioCilindros(page)),
-                    ElevatedButton(mensaje.regresarBtn, bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[self.regresarJefesFamiliaCilindro(page), mensaje.cambiarTitulo(page, self.titulo, "Datos Personales del Jefe de Familia")])
+                    ElevatedButton(mensaje.regresarBtn, bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[self.regresarJefesFamiliaCilindro(page), self.appbar.cambiarTitulo("Datos Personales del Jefe de Familia")])
                 ]
             )
         )
@@ -665,7 +656,7 @@ class principal:
                         vertical_alignment=MainAxisAlignment.CENTER,
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                         controls=[
-                            ElevatedButton(mensaje.regresarBtn, bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarTitulo(page, self.titulo, "Mi Comunidad")]),
+                            ElevatedButton(mensaje.regresarBtn, bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), self.appbar.cambiarTitulo("Mi Comunidad")]),
                             self.tituloCilindroPropietario,
                             Row(
                                 vertical_alignment=MainAxisAlignment.CENTER,
@@ -745,7 +736,7 @@ class principal:
         self.titulo, self.contenedorInicio, self.contenedorReporte, self.contenedorHistorial, self.contenedorPerfilJefe, 
         self.contenedorPerfilLider, self.formularioJefe, self.formularioCilindro, self.contenedorJefeFamilia, self.tablaJornadaPrincipal,
         self.nombreLi, self.apellidoLi, self.cedulaLi, self.ubicacionLi, self.telefonoLi, self.correoLi, self.textoSlider, 
-        self.tablaLlenarHistorial, self.tablaSeleccionarHistorial)
+        self.tablaLlenarHistorial, self.tablaSeleccionarHistorial, self.appbar)
 
     def iniciarGenerarCartas(self, pagee):
         pagee = pagee

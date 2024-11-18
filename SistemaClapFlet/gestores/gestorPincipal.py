@@ -5,6 +5,7 @@ from controlador.mensajes import mensaje, validaciones
 from gestores.gestorLiderPolitico import editarDatosUsuario, archivos
 from modelo.modelPrincipal import jefeFamiliar, lider, cilindro
 from modelo.consultas import consulta
+from modelo.modelVista import cartas
 
 import modelo.reporte
 from modelo.reporte import Pdf
@@ -70,10 +71,12 @@ class gestionPrincipal:
     tablaLlenarHistorial = None
     textoSlider = None
 
+    appbar = None
+
     def obtenerWidget(formulario, nombre, apellido, cedula, ubicacion, telefono, correo, columnaCards, tituloAgregarJefes, tituloCilindroSeleccionado, 
     tituloCilindroPropietario, titulo, contenedorInicio, contenedorReporte, contenedorHistorial, contenedorPerfilJefe, contenedorPerfilLider, 
     formularioJefe, formularioCilindro, contenedorJefeFamilia, tablaJornadaPrincipal, nombreLi, apellidoLi, cedulaLi, ubicacionLi, telefonoLi, 
-    correoLi, textoSlider, tablaLlenarHistorial, tablaSeleccionarHistorial):
+    correoLi, textoSlider, tablaLlenarHistorial, tablaSeleccionarHistorial, appbar):
         gestionPrincipal.formulario = formulario
 
         gestionPrincipal.nombreJ = nombre
@@ -111,41 +114,22 @@ class gestionPrincipal:
         gestionPrincipal.textoSlider = textoSlider
         gestionPrincipal.tablaLlenarHistorial = tablaLlenarHistorial
         gestionPrincipal.tablaSeleccionarHistorial = tablaSeleccionarHistorial
+        gestionPrincipal.appbar = appbar
 
 #GENERAR CARTAS DE JEFES DE FAMILIA Y VER SU CONTENIDO
 class cartasJefesFamilia:
     #LIMPIA EL CONTEDOR DE LAS CARTAS
     def volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros):
         if db.consultaConRetorno(consulta.verificarJefesFamiliaCartas, [iDLiderCalle,]):
-            gestionPrincipal.cartas.clear()
+            gestionPrincipal.tituloAgregarJefes.visible = False            
+            carticas = cartas(page, iDLiderCalle, tablaPedido, tablaCilindros, formularioJefeFamilia.generarJefe, consulta.obtenerInfoJefesFamiliaCartas, gestionPrincipal.cartas)
             gestionPrincipal.columnaCards.controls.clear()
-            gestionPrincipal.tituloAgregarJefes.visible = False
-            gestionPrincipal.columnaCards.controls = cartasJefesFamilia.generarCards(page, iDLiderCalle, tablaPedido, tablaCilindros)
+            gestionPrincipal.columnaCards.controls = carticas.generarCards()
+            del carticas
             page.update()
         else:
             pass
     
-    def generarCards(page, iDLiderCalle, tablaPedido, tablaCilindros):
-        for ids, nom, ape, ci in db.consultaConRetorno(consulta.obtenerInfoJefesFamiliaCartas, [iDLiderCalle,]):
-            gestionPrincipal.cartas.append(
-                Container(
-                    bgcolor="RED",
-                    height=150,
-                    width=250,
-                    padding=padding.all(7),
-                    border_radius=border_radius.all(20),
-                    on_click=lambda _, ids=ids, nom=nom: formularioJefeFamilia.generarJefe(ids, page, nom, tablaCilindros, tablaPedido), 
-                    content=Column(
-                        controls=[
-                            Text(f"{nom} {ape}", style=TextThemeStyle.TITLE_LARGE, color="WHITE"),
-                            Text(f"{ci}", style=TextThemeStyle.TITLE_MEDIUM, color="WHITE"),
-                        ]
-                    )
-                )
-            )
-            page.update()
-        return gestionPrincipal.cartas
-
 class formularioJefeFamilia:
     #VER CONTENIDO
     #ESTA FUNCION HACE UNA CONSULTA A LA TABLA PEDIDOS SI RETORNA ALGO SE ACTIVA LA OTRA DATATABLE
@@ -153,7 +137,7 @@ class formularioJefeFamilia:
         resultadoQuery = db.consultaConRetorno(consulta.obtenerCilindrosJefeFamilia, [idJefeFamilia,])
 
         tablaCilindros.rows.clear()
-        gestionPrincipal.titulo.value = mensaje.cambiarNombreTitulo(nombre)
+        gestionPrincipal.appbar.cambiarTitulo(f"cilindros de {nombre}")
         tablaCilindros.rows = formularioJefeFamilia.mostrarCilindrosJefes(idJefeFamilia, page, nombre, tablaCilindros, tablaPedido)
 
         if resultadoQuery:
@@ -292,7 +276,7 @@ class registrarJefeFamiliaCilindros:
             page.update()
 
         else:
-            mensaje.cambiarTitulo(page, gestionPrincipal.titulo,  f"Datos de Cilindros de {nombre.value} {apellido.value}")
+            gestionPrincipal.appbar.cambiarTitulo(f"Datos de Cilindros de {nombre.value} {apellido.value}")
             rutas.animar(gestionPrincipal.formulario, gestionPrincipal.formularioCilindro, gestionPrincipal.formularioCilindro, page)
 
     #GENERAR EL FORMULARIO DE CILINDROS
@@ -401,7 +385,7 @@ class registrarJefeFamiliaCilindros:
             sleep(0.1)
 
         mensaje.cerrarAlert(page, alert)
-        mensaje.cambiarTitulo(page, gestionPrincipal.titulo, "Mi Comunidad")
+        gestionPrincipal.appbar.cambiarTitulo("Mi Comunidad")
         regresarAtras.regresarAlInicioCompletado(page, cantidadCi, empresa, pico, tamano, nuevoJefe.get_liderId(), tablaPedido, tablaCilindros)
 
 class editarDatosJefeFamilia:
@@ -504,7 +488,7 @@ class editarDatosJefeFamilia:
             editarDatosJefeFamilia.cargarDatosJefe(page)
             mensaje.cerrarAlert(page, alertValidar)
             if condicion == True:
-                gestionPrincipal.titulo.value = mensaje.cambiarNombreTitulo(campo1.value)
+                gestionPrincipal.appbar.cambiarTitulo(f"cilindros de {campo1.value}")
             page.snack_bar = SnackBar(bgcolor="GREEN", content=Text(mensajeFinal))
             page.snack_bar.open = True
             page.update()
@@ -1147,10 +1131,6 @@ class editarDatosLiderCalle:
             page.update()
 
 class regresarAtras:
-    def volverLogin(page, indicator):
-        gestionPrincipal.columnaCards.controls.clear()
-        gestionPrincipal.tablaSeleccionarHistorial.rows.clear()
-        mensaje.salir(page, indicator)
 
     #RETRODECER EN FORMULARIOS
     def regresarInicio(page, nombre, apellido, cedula, cantidadCi, numeroTelefono, codigoTelefono, correo, tipoCorreo, tipoCedula):
@@ -1164,7 +1144,7 @@ class regresarAtras:
         tipoCorreo.value = None
         tipoCedula.value = "V"
 
-        mensaje.cambiarTitulo(page, gestionPrincipal.titulo, mensaje.tituloComunidad)
+        gestionPrincipal.appbar.cambiarTitulo(mensaje.tituloComunidad)
         rutas.animar(gestionPrincipal.formulario, gestionPrincipal.contenedorInicio, gestionPrincipal.contenedorInicio, page)
 
         page.update()

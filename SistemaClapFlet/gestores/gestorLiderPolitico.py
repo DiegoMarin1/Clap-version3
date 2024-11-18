@@ -4,6 +4,7 @@ from controlador.rutas import rutas
 from controlador.mensajes import mensaje, validaciones
 from modelo.modelPrincipal import lider, jefeFamiliar
 from modelo.consultas import consulta
+from modelo.modelVista import cartas
 
 import modelo.reporte
 from modelo.reporte import *
@@ -38,7 +39,6 @@ class gestionPrincipal:
     correo = None
     columnaCards = None
 
-    titulo = None
     contenedorInicio = None
     contenedorHistorial = None
     formularioBitacora = None
@@ -63,11 +63,13 @@ class gestionPrincipal:
     check = None
     btnCandado = None
     btnCandadoP = None
+    appbar = None
+
 
     def obtenerWidget(formulario, nombre, apellido, cedula, estatus, contrasena, usuario, pregunta, respuesta, ubicacion, telefono, correo, 
-    columnaCards, titulo, contenedorInicio, contenedorHistorial ,formularioBitacora, formularioLiderCalle, 
+    columnaCards, contenedorInicio, contenedorHistorial ,formularioBitacora, formularioLiderCalle, 
     contenedorBombonas, contenedorPerfil, listaBitacora, nombreLi, apellidoLi, cedulaLi, ubicacionLi, telefonoLi, correoLi, 
-    preguntaP, respuestaP, usuarioP, contrasenaP, tablaLlenarHistorial, tablaSeleccionarHistorial, check, btnCandado, btnCandadoP, ):
+    preguntaP, respuestaP, usuarioP, contrasenaP, tablaLlenarHistorial, tablaSeleccionarHistorial, check, btnCandado, btnCandadoP, appbar):
 
         gestionPrincipal.formulario = formulario
         gestionPrincipal.nombre = nombre
@@ -83,7 +85,6 @@ class gestionPrincipal:
         gestionPrincipal.correo = correo
         gestionPrincipal.columnaCards = columnaCards
 
-        gestionPrincipal.titulo = titulo
         gestionPrincipal.contenedorInicio = contenedorInicio
         gestionPrincipal.contenedorHistorial = contenedorHistorial
         gestionPrincipal.formularioBitacora = formularioBitacora
@@ -107,16 +108,13 @@ class gestionPrincipal:
         gestionPrincipal.check = check
         gestionPrincipal.btnCandado = btnCandado
         gestionPrincipal.btnCandadoP = btnCandadoP
-
-    def volverLogin(page, indicator):
-        gestionPrincipal.columnaCards.controls.clear()
-        gestionPrincipal.tablaSeleccionarHistorial.rows.clear()
-        mensaje.salir(page, indicator)
+        gestionPrincipal.appbar = appbar
 
 #GENERA LAS FICHAS DE LOS JEFES DE FAMILIA MOSTRADOS EN LA VIEW
 class generarCartas:
     #LIMPIA EL CONTEDOR DE LAS CARTAS
     def volverGenerarCartas(page):
+        gestionPrincipal.cartas.clear()
         gestionPrincipal.columnaCards.controls.clear()
         gestionPrincipal.columnaCards.controls = generarCartas.generarCards(page)
 
