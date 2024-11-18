@@ -4,12 +4,22 @@ from controlador.conexion import db
 from datetime import datetime
 from controlador.mensajes import mensaje
 from modelo.consultas import consulta
+from controlador.rutas import rutas
 
-"""class slider:
-    def __init__(self, page):
+class sliderBase(UserControl):
+    def __init__(self, page:Page, indicador, formulario):
+        super().__init__()
         self.page = page
+        self.indicador = indicador
+        self.formulario = formulario
+        self.textoSlider = Text("", weight=FontWeight.W_500, color="WHITE")
+        self.columna = Column(
+                        horizontal_alignment=CrossAxisAlignment.CENTER,
+                        spacing=10,
+                        )
 
-        self.slider = Container(
+    def build(self):
+        return Container(
             height=635,
             width=150,
             bgcolor="#C5283D",
@@ -26,11 +36,92 @@ from modelo.consultas import consulta
                             Column(
                                 height=630,
                                 controls=[
-                                    self.indicator
+                                    self.indicador
                                 ]
                             ),
+                            self.columna
+                        ]
+                    )
+                ]
+            )
+        )    
+    
+    def cambiarNombreSlider(self, nombre):
+        self.textoSlider.value = f"{nombre}"
+        self.update()
 
-                            Column(
+    def contruirPrincipal(self, contenedorInicio, appbar, contenedorReporte, funcionReporte, iDLiderCalle, contenedorHistorial, funcionHistorial, contenedorPerfilLider, funcionPerfil):
+        self.columna.controls = [
+                            Container(
+                                        padding=padding.only(top=25),
+                                        content=Column(
+                                            horizontal_alignment=CrossAxisAlignment.CENTER,
+                                            controls=[
+                                                CircleAvatar(
+                                                    content=Icon(icons.PEOPLE),
+                                                    width=80,
+                                                    height=80,
+                                                ),
+                                                Text(mensaje.bienvenida, weight=FontWeight.W_500, color="WHITE"),
+                                                self.textoSlider,
+                                            ]
+                                        )
+                                    ),
+
+                                    Container(
+                                        margin=margin.only(top=50),
+                                        padding=padding.only(left=35),
+                                        data=0,
+                                        on_click=lambda e: [rutas.animar(self.formulario, contenedorInicio, contenedorInicio, self.page), mensaje.cambiarPagina(self.indicador, 5.5), appbar.cambiarTitulo("Mi Comunidad")],
+                                        content=Row(
+                                            controls=[
+                                                Icon(name=icons.HOME),
+                                                Text(mensaje.inicio)
+                                            ]
+                                        )
+                                    ),
+
+                                    Container(
+                                        margin=margin.only(top=20),
+                                        padding=padding.only(left=35),
+                                        data=0,
+                                        on_click=lambda e: [rutas.animar(self.formulario, contenedorReporte, contenedorReporte, self.page), mensaje.cambiarPagina(self.indicador, 6.8), funcionReporte(self.page, iDLiderCalle), appbar.cambiarTitulo("Administrador de Jornada")],
+                                        content=Row(
+                                            controls=[
+                                                Icon(name=icons.EDIT_NOTE),
+                                                Text(mensaje.reporte)
+                                            ]
+                                        )
+                                    ),
+                                    Container(
+                                        margin=margin.only(top=20),
+                                        padding=padding.only(left=35),
+                                        data=0,
+                                        on_click=lambda e: [rutas.animar(self.formulario, contenedorHistorial, contenedorHistorial, self.page), mensaje.cambiarPagina(self.indicador, 8.2), funcionHistorial(self.page), appbar.cambiarTitulo("Historial de jornadas")],
+                                        content=Row(
+                                            controls=[
+                                                Icon(name=icons.EVENT_NOTE),
+                                                Text(mensaje.historial)
+                                            ]
+                                        )
+                                    ),
+                                    Container(
+                                        margin=margin.only(top=20),
+                                        padding=padding.only(left=35),
+                                        data=0,
+                                        on_click=lambda e: [rutas.animar(self.formulario, contenedorPerfilLider, contenedorPerfilLider, self.page), funcionPerfil(self.page), mensaje.cambiarPagina(self.indicador, 9.5), appbar.cambiarTitulo("Mis datos")],
+                                        content=Row(
+                                            controls=[
+                                                Icon(name=icons.PEOPLE),
+                                                Text(mensaje.perfil)
+                                            ]
+                                        )
+                                    ),
+                                ]
+        self.update()
+
+    def contruirLiderCalle(self, contenedorInicio, contenedorBombonas, contenedorPerfil, appbar, funcionPerfil, contrasena):
+        self.columna.controls = [Column(
                                 horizontal_alignment=CrossAxisAlignment.CENTER,
                                 spacing=10,
                                 controls=[
@@ -44,21 +135,23 @@ from modelo.consultas import consulta
                                                     width=80,
                                                     height=80,
                                                 ),
-#                                               Text(mensaje.bienvenida, weight=FontWeight.W_500, color="WHITE"),
+                                                Text("Bienvenido", weight=FontWeight.W_500, color="WHITE"),
                                                 self.textoSlider,
                                             ]
                                         )
                                     ),
 
                                     Container(
+                                        
                                         margin=margin.only(top=50),
                                         padding=padding.only(left=35),
+                                        offset=Offset(x=None, y=None),
                                         data=0,
- #                                       on_click=lambda e: [rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), mensaje.cambiarTitulo(page, self.titulo, "Mi Comunidad")],
+                                        on_click=lambda e: [rutas.animar(self.formulario, contenedorInicio, contenedorInicio, self.page), mensaje.cambiarPagina(self.indicador, 5.5), appbar.cambiarTitulo("Lideres de Calle")],
                                         content=Row(
                                             controls=[
                                                 Icon(name=icons.HOME),
-#                                                Text(mensaje.inicio)
+                                                Text("Inicio")
                                             ]
                                         )
                                     ),
@@ -67,46 +160,32 @@ from modelo.consultas import consulta
                                         margin=margin.only(top=20),
                                         padding=padding.only(left=35),
                                         data=0,
-#                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorReporte, self.contenedorReporte, page), mensaje.cambiarPagina(self.indicator, 6.8), reporteJornada.volverGenerarJornada(page, self.iDLiderCalle), mensaje.cambiarTitulo(page, self.titulo, "Administrador de Jornada")],
-                                        content=Row(
-                                            controls=[
-                                                Icon(name=icons.EDIT_NOTE),
-#                                                Text(mensaje.reporte)
-                                            ]
-                                        )
-                                    ),
-                                    Container(
-                                        margin=margin.only(top=20),
-                                        padding=padding.only(left=35),
-                                        data=0,
- #                                       on_click=lambda e: [rutas.animar(self.formulario, self.contenedorHistorial, self.contenedorHistorial, page), mensaje.cambiarPagina(self.indicator, 8.2), archivoPdf.volverGenerarArchivos(page), mensaje.cambiarTitulo(page, self.titulo, "Historial de jornadas")],
+                                        on_click=lambda e: [rutas.animar(self.formulario, contenedorBombonas, contenedorBombonas, self.page), mensaje.cambiarPagina(self.indicador, 6.8), appbar.cambiarTitulo("Gestion de Bombonas")],
                                         content=Row(
                                             controls=[
                                                 Icon(name=icons.EVENT_NOTE),
-#                                                Text(mensaje.historial)
+                                                Text("Bombonas")
                                             ]
                                         )
                                     ),
+
                                     Container(
                                         margin=margin.only(top=20),
                                         padding=padding.only(left=35),
+                                        offset=Offset(x=None, y=None),
                                         data=0,
- #                                       on_click=lambda e: [rutas.animar(self.formulario, self.contenedorPerfilLider, self.contenedorPerfilLider, page), editarDatosLiderCalle.cargarDatosLider(page), mensaje.cambiarPagina(self.indicator, 9.5), mensaje.cambiarTitulo(page, self.titulo, "Mis datos")],
+                                        on_click=lambda e: [rutas.animar(self.formulario, contenedorPerfil, contenedorPerfil, self.page), mensaje.cambiarPagina(self.indicador, 8.2), appbar.cambiarTitulo("Tu Perfil"), funcionPerfil(self.page, contrasena)],
                                         content=Row(
                                             controls=[
                                                 Icon(name=icons.PEOPLE),
-  #                                              Text(mensaje.perfil)
+                                                Text("Tu Perfil")
                                             ]
                                         )
                                     ),
                                 ]
                             )
-                        ]
-                    )
-                ]
-            )
-        )
-"""
+        ]
+    
 class appBar(UserControl):
     def __init__(self, page:Page, indicador, logo):
         super().__init__()

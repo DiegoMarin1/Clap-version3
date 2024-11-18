@@ -385,7 +385,7 @@ class registrarJefeFamiliaCilindros:
             sleep(0.1)
 
         mensaje.cerrarAlert(page, alert)
-        gestionPrincipal.appbar.cambiarTitulo("Mi Comunidad")
+        gestionPrincipal.appbar.cambiarTitulo("Lideres de Calle")
         regresarAtras.regresarAlInicioCompletado(page, cantidadCi, empresa, pico, tamano, nuevoJefe.get_liderId(), tablaPedido, tablaCilindros)
 
 class editarDatosJefeFamilia:
@@ -403,7 +403,7 @@ class editarDatosJefeFamilia:
         gestionPrincipal.ubicacionJ.value = f"{datosJefeFamilia.ubicacion}"
 
         rutas.animar(gestionPrincipal.formulario, gestionPrincipal.contenedorPerfilJefe, gestionPrincipal.contenedorPerfilJefe, page)
-
+    
         page.update()
 
     #SECCION NOMBRE
@@ -1144,7 +1144,7 @@ class regresarAtras:
         tipoCorreo.value = None
         tipoCedula.value = "V"
 
-        gestionPrincipal.appbar.cambiarTitulo(mensaje.tituloComunidad)
+        gestionPrincipal.appbar.cambiarTitulo("Lideres de calle")
         rutas.animar(gestionPrincipal.formulario, gestionPrincipal.contenedorInicio, gestionPrincipal.contenedorInicio, page)
 
         page.update()

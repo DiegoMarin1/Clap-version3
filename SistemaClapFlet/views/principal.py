@@ -4,7 +4,7 @@ from flet import View, AnimatedSwitcher, AnimatedSwitcherTransition, ScrollMode,
 from flet_route import Params, Basket
 from datetime import datetime
 from time import sleep
-from modelo.modelVista import appBar
+from modelo.modelVista import appBar, sliderBase
 
 import os
 import pathlib
@@ -173,105 +173,6 @@ class principal:
         
         self.appbar = appBar(page, self.indicator, self.logo)
         self.appbar.cambiarTitulo(mensaje.tituloComunidad)
-
-        #SLIDER
-        self.slider = Container(
-            height=635,
-            width=150,
-            bgcolor="#C5283D",
-            border_radius=border_radius.all(15),
-            content=Column(
-                horizontal_alignment=CrossAxisAlignment.CENTER,
-                spacing=10,
-                height=630,
-                width=150,
-                expand=True,
-                controls=[
-                    Stack(
-                        controls=[
-                            Column(
-                                height=630,
-                                controls=[
-                                    self.indicator
-                                ]
-                            ),
-
-                            Column(
-                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                                spacing=10,
-                                controls=[
-                                    Container(
-                                        padding=padding.only(top=25),
-                                        content=Column(
-                                            horizontal_alignment=CrossAxisAlignment.CENTER,
-                                            controls=[
-                                                CircleAvatar(
-                                                    content=Icon(icons.PEOPLE),
-                                                    width=80,
-                                                    height=80,
-                                                ),
-                                                Text(mensaje.bienvenida, weight=FontWeight.W_500, color="WHITE"),
-                                                self.textoSlider,
-                                            ]
-                                        )
-                                    ),
-
-                                    Container(
-                                        margin=margin.only(top=50),
-                                        padding=padding.only(left=35),
-                                        data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo("Mi Comunidad")],
-                                        content=Row(
-                                            controls=[
-                                                Icon(name=icons.HOME),
-                                                Text(mensaje.inicio)
-                                            ]
-                                        )
-                                    ),
-
-                                    Container(
-                                        margin=margin.only(top=20),
-                                        padding=padding.only(left=35),
-                                        data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorReporte, self.contenedorReporte, page), mensaje.cambiarPagina(self.indicator, 6.8), reporteJornada.volverGenerarJornada(page, self.iDLiderCalle), self.appbar.cambiarTitulo("Administrador de Jornada")],
-                                        content=Row(
-                                            controls=[
-                                                Icon(name=icons.EDIT_NOTE),
-                                                Text(mensaje.reporte)
-                                            ]
-                                        )
-                                    ),
-                                    Container(
-                                        margin=margin.only(top=20),
-                                        padding=padding.only(left=35),
-                                        data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorHistorial, self.contenedorHistorial, page), mensaje.cambiarPagina(self.indicator, 8.2), archivoPdf.volverGenerarArchivos(page), self.appbar.cambiarTitulo("Historial de jornadas")],
-                                        content=Row(
-                                            controls=[
-                                                Icon(name=icons.EVENT_NOTE),
-                                                Text(mensaje.historial)
-                                            ]
-                                        )
-                                    ),
-                                    Container(
-                                        margin=margin.only(top=20),
-                                        padding=padding.only(left=35),
-                                        data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorPerfilLider, self.contenedorPerfilLider, page), editarDatosLiderCalle.cargarDatosLider(page), mensaje.cambiarPagina(self.indicator, 9.5), self.appbar.cambiarTitulo("Mis datos")],
-                                        content=Row(
-                                            controls=[
-                                                Icon(name=icons.PEOPLE),
-                                                Text(mensaje.perfil)
-                                            ]
-                                        )
-                                    ),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            )
-        )
 
         #CONTENEDORES PRINCIPALES
         self.contenedorInicio = Container(
@@ -460,7 +361,7 @@ class principal:
                                         IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: editarDatosJefeFamilia.editCorreo(page, self.iDLiderCalle, self.tablaPedido, self.tablaCilindros))
                                     ]
                                 ),
-                                ElevatedButton("Regresar a inicio", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), mensaje.cambiarTitulo(page, self.titulo, "Mi Comunidad")]),
+                                ElevatedButton("Regresar a inicio", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo(mensaje.tituloComunidad)]),
                             ]
                         )
                     )
@@ -704,6 +605,11 @@ class principal:
             switch_in_curve=AnimationCurve.BOUNCE_OUT,
             switch_out_curve=AnimationCurve.BOUNCE_IN
         )
+
+        #SLIDER
+        self.slider = sliderBase(page, self.indicator, self.formulario)
+        self.slider.contruirPrincipal(self.contenedorInicio, self.appbar, self.contenedorReporte, reporteJornada.volverGenerarJornada, self.iDLiderCalle, self.contenedorHistorial, archivoPdf.volverGenerarArchivos, self.contenedorPerfilLider, editarDatosLiderCalle.cargarDatosLider)
+        self.slider.cambiarNombreSlider(self.nombreLiderCalle)
 
         self.pasarWidget()
         self.iniciarGenerarCartas(page)

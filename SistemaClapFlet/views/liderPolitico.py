@@ -9,7 +9,7 @@ import pathlib
 import shutil
 
 import modelo.reporte
-from modelo.modelVista import appBar
+from modelo.modelVista import appBar, sliderBase
 
 from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas
@@ -121,100 +121,8 @@ class liderPolitico:
 
         #APP BAR
         self.appbar = appBar(page, self.indicator, self.logo)
-        self.appbar.cambiarTitulo(mensaje.tituloComunidad)
-
-        #SLIDER
-        self.slider = Container(
-            height=635,
-            width=150,
-            bgcolor="#C5283D",
-            border_radius=border_radius.all(15),
-            content=Column(
-                horizontal_alignment=CrossAxisAlignment.CENTER,
-                spacing=10,
-                height=630,
-                width=150,
-                expand=True,
-                controls=[
-                    Stack(
-                        controls=[
-                            Column(
-                                height=630,
-                                controls=[
-                                    self.indicator
-                                ]
-                            ),
-
-                            Column(
-                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                                spacing=10,
-                                controls=[
-                                    Container(
-                                        padding=padding.only(top=25),
-                                        content=Column(
-                                            horizontal_alignment=CrossAxisAlignment.CENTER,
-                                            controls=[
-                                                CircleAvatar(
-                                                    content=Icon(icons.PEOPLE),
-                                                    width=80,
-                                                    height=80,
-                                                ),
-                                                Text("Bienvenido", weight=FontWeight.W_500, color="WHITE"),
-                                                self.textoSlider,
-                                            ]
-                                        )
-                                    ),
-
-                                    Container(
-                                        
-                                        margin=margin.only(top=50),
-                                        padding=padding.only(left=35),
-                                        offset=Offset(x=None, y=None),
-                                        data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo("Lideres de Calle")],
-                                        content=Row(
-                                            controls=[
-                                                Icon(name=icons.HOME),
-                                                Text("Inicio")
-                                            ]
-                                        )
-                                    ),
-
-                                    Container(
-                                        margin=margin.only(top=20),
-                                        padding=padding.only(left=35),
-                                        data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorBombonas, self.contenedorBombonas, page), mensaje.cambiarPagina(self.indicator, 6.8), self.appbar.cambiarTitulo("Gestion de Bombonas")],
-                                        content=Row(
-                                            controls=[
-                                                Icon(name=icons.EVENT_NOTE),
-                                                Text("Bombonas")
-                                            ]
-                                        )
-                                    ),
-
-                                    Container(
-                                        margin=margin.only(top=20),
-                                        padding=padding.only(left=35),
-                                        offset=Offset(x=None, y=None),
-                                        data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, self.contenedorPerfil, self.contenedorPerfil, page), mensaje.cambiarPagina(self.indicator, 8.2), self.appbar.cambiarTitulo("Tu Perfil"), revelarContrasena.regresarPassFalse(page, self.contrasena)],
-                                        content=Row(
-                                            controls=[
-                                                Icon(name=icons.PEOPLE),
-                                                Text("Tu Perfil")
-                                            ]
-                                        )
-                                    ),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            )
-        )
-
-
+        self.appbar.cambiarTitulo("Lideres de calle")
+        
         #CONTENEDORES PRINCIPALES
         self.contenedorInicio = Container(
             height=635,
@@ -579,7 +487,6 @@ class liderPolitico:
                 spacing=30,
                 horizontal_alignment=CrossAxisAlignment.CENTER,
                 controls=[
-#                    ElevatedButton("Agregar nueva Empresa", on_click=lambda _: caracteristicasCilindro.nuevaEmpresa(page)),
                     ElevatedButton("Agregar nueva Empresa", on_click=lambda _: caracteristicasCilindro.nuevaCaracteristica(page, mensaje.anadirNuevaEmpresa, self.entryEmpresa, caracteristicasCilindro.ValidarNuevaCaracteristica, consulta.verificarEmpresa, mensaje.empresaDuplicada, mensaje.anadidoEmpresa)),
                     ElevatedButton("Agregar nuevo Pico", on_click=lambda _: caracteristicasCilindro.nuevaCaracteristica(page, mensaje.anadirNuevoPico, self.entryPico, caracteristicasCilindro.ValidarNuevaCaracteristica, consulta.verificarPico, mensaje.picoDuplicado, mensaje.anadidoPico))            
                 ]
@@ -597,6 +504,11 @@ class liderPolitico:
             switch_in_curve=AnimationCurve.BOUNCE_OUT,
             switch_out_curve=AnimationCurve.BOUNCE_IN
         )
+
+        #SLIDER
+        self.slider = sliderBase(page, self.indicator, self.formulario)
+        self.slider.contruirLiderCalle(self.contenedorInicio, self.contenedorBombonas, self.contenedorPerfil, self.appbar, revelarContrasena.regresarPassFalse, self.contrasena)
+        self.slider.cambiarNombreSlider(self.nombreLiderCalle)
 
         self.pasarWidget()
         datosUsuario.volverCargarTusDatos(page)
