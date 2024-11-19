@@ -1,10 +1,80 @@
 from flet import *
-from flet import Container, border_radius, Column, CrossAxisAlignment, Stack, FontWeight, Page
+from flet import CircleAvatar, Icon, icons, margin, Text, Offset, Row, UserControl, padding, Container, border_radius, Column, CrossAxisAlignment, Stack, FontWeight, Page
 from controlador.conexion import db
 from datetime import datetime
 from controlador.mensajes import mensaje
 from modelo.consultas import consulta
 from controlador.rutas import rutas
+
+class seccionesEditar(UserControl):
+    def __init__(self, page:Page, entry):
+        super().__init__()
+        self.page = page
+        self.entry = entry
+        self.listaBotones = []
+        self.row = Row(
+                    alignment=MainAxisAlignment.CENTER,
+                    controls=[
+                        self.listaBotones
+                    ]
+                )
+        self.alert = AlertDialog(
+            content=Container(
+                alignment=alignment.center,
+                height=150,
+                width=300,
+                bgcolor="white",
+                content=Row(
+                    spacing=10,
+                    controls=[
+                        self.entry,
+                    ]
+                )
+            ),
+            actions=[
+                self.row
+            ]
+        )
+    
+    def pasarBoton(self, boton):
+        self.row.controls = boton
+        self.update()
+
+class seccionesEditarCompleja(UserControl):
+    def __init__(self, page:Page, entry, entry2):
+        super().__init__()
+        self.page = page
+        self.entry = entry
+        self.entry2 = entry2
+        self.listaBotones = []
+        self.row = Row(
+                    alignment=MainAxisAlignment.CENTER,
+                    controls=[
+                        self.listaBotones
+                    ]
+                )
+        self.alert = AlertDialog(
+            content=Container(
+                alignment=alignment.center,
+                height=150,
+                width=300,
+                bgcolor="white",
+                content=Row(
+                    spacing=10,
+                    controls=[
+                        self.entry,
+                        self.entry2
+                    ]
+                )
+            ),
+            actions=[
+                self.row
+            ]
+        )
+    
+    def pasarBoton(self, boton):
+        self.row.controls = boton
+        self.update()
 
 class sliderBase(UserControl):
     def __init__(self, page:Page, indicador, formulario):

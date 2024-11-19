@@ -4,7 +4,7 @@ from controlador.rutas import rutas
 from controlador.mensajes import mensaje, validaciones
 from modelo.modelPrincipal import lider, jefeFamiliar
 from modelo.consultas import consulta
-from modelo.modelVista import cartas
+from modelo.modelVista import cartas, seccionesEditar, seccionesEditarCompleja
 
 import modelo.reporte
 from modelo.reporte import *
@@ -162,6 +162,8 @@ class formularioUsuarioLiderCalle:
         gestionPrincipal.telefono.value = f"{datosUsuarioLiderCalle.telefono}"
         gestionPrincipal.correo.value = f"{datosUsuarioLiderCalle.correo}"
 
+        rutas.animar(gestionPrincipal.formulario, gestionPrincipal.formularioLiderCalle, gestionPrincipal.formularioLiderCalle, page)
+        
         if resultadoUsuario[0][10] == 1:
             gestionPrincipal.estatus.value = "Habilitado"
             gestionPrincipal.check.value = False
@@ -340,32 +342,11 @@ class editarDatosUsuario:
         entryNombre = TextField(label="Nombre", hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), validaciones.validarCamposNot(entryNombre, page, False, validaciones.condicionNombres)])
         entryNombre.value = gestionPrincipal.nombreLi.value
 
-        alertEditNombre = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=10,
-                    controls=[
-                        entryNombre,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, entryNombre, alertEditNombre, 3, consulta.actualizarNombreLider, slider, datosUsuario.volverCargarTusDatos, mensaje.nombreEditadoFinal, True)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre))
-                    ]
-                )
-            ]
-        )
+        alertEditNombre = seccionesEditar(page, entryNombre)
+        alertEditNombre.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, alertEditNombre.entry, alertEditNombre.alert, 3, consulta.actualizarNombreLider, slider, datosUsuario.volverCargarTusDatos, mensaje.nombreEditadoFinal, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre.alert))])
 
-        page.dialog = alertEditNombre
-        alertEditNombre.open = True
+        page.dialog = alertEditNombre.alert
+        alertEditNombre.alert.open = True
 
         page.update()
 
@@ -374,32 +355,11 @@ class editarDatosUsuario:
         entryApellido = TextField(label="Apellido", hint_text="Minimo 4 caracteres", max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), validaciones.validarCamposNot(entryApellido, page, False, validaciones.condicionNombres)])
         entryApellido.value = gestionPrincipal.apellidoLi.value
 
-        alertEditApellido = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=10,
-                    controls=[
-                        entryApellido,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, entryApellido, alertEditApellido, 4, consulta.actualizarApellidoLider, slider, datosUsuario.volverCargarTusDatos, mensaje.apellidoEditadoFinal, False)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido))
-                    ]
-                )
-            ]
-        )
+        alertEditApellido = seccionesEditar(page, entryApellido)
+        alertEditApellido.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, alertEditApellido.entry, alertEditApellido.alert, 4, consulta.actualizarApellidoLider, slider, datosUsuario.volverCargarTusDatos, mensaje.apellidoEditadoFinal, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido.alert))])
 
-        page.dialog = alertEditApellido
-        alertEditApellido.open = True
+        page.dialog = alertEditApellido.alert
+        alertEditApellido.alert.open = True
 
         page.update()
 
@@ -430,33 +390,11 @@ class editarDatosUsuario:
         entryTelefono = TextField(label="N telefono", hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), validaciones.validarCamposNot(entryTelefono, page, True, validaciones.condicionNumeros)])
         entryTelefono.value = telefono
 
-        alertEditTelefono = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=2,
-                    controls=[
-                        selectTipoTelefono,
-                        entryTelefono,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, selectTipoTelefono, entryTelefono, alertEditTelefono, mensaje.telefonoInvalido, consulta.verificarTelefonoLider, mensaje.telefonoRegistrado, consulta.actualizarTelefonoLider, datosUsuario.volverCargarTusDatos, mensaje.telefonoGuardado, 7, True)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono))
-                    ]
-                )
-            ]
-        )
+        alertEditTelefono = seccionesEditarCompleja(page, selectTipoTelefono, entryTelefono)
+        alertEditTelefono.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, alertEditTelefono.entry, alertEditTelefono.entry2, alertEditTelefono.alert, mensaje.telefonoInvalido, consulta.verificarTelefonoLider, mensaje.telefonoRegistrado, consulta.actualizarTelefonoLider, datosUsuario.volverCargarTusDatos, mensaje.telefonoGuardado, 7, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono.alert))])
 
-        page.dialog = alertEditTelefono
-        alertEditTelefono.open = True
+        page.dialog = alertEditTelefono.alert
+        alertEditTelefono.alert.open = True
 
         page.update()
 
@@ -478,33 +416,11 @@ class editarDatosUsuario:
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com")])
         selectTipoCorreo.value = tipo
 
-        alertEditCorreo = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=2,
-                    controls=[
-                        entryCorreo,
-                        selectTipoCorreo,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, selectTipoCorreo, entryCorreo, alertEditCorreo, mensaje.correoInvalido, consulta.verificarCorreoLider, mensaje.correoRegistrado, consulta.actualizarCorreoLider, datosUsuario.volverCargarTusDatos, mensaje.correoGuardado, 3, False)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo))
-                    ]
-                )
-            ]
-        )
+        alertEditCorreo = seccionesEditarCompleja(page, entryCorreo, selectTipoCorreo)
+        alertEditCorreo.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, alertEditCorreo.entry2, alertEditCorreo.entry, alertEditCorreo.alert, mensaje.correoInvalido, consulta.verificarCorreoLider, mensaje.correoRegistrado, consulta.actualizarCorreoLider, datosUsuario.volverCargarTusDatos, mensaje.correoGuardado, 3, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo.alert))])
 
-        page.dialog = alertEditCorreo
-        alertEditCorreo.open = True
+        page.dialog = alertEditCorreo.alert
+        alertEditCorreo.alert.open = True
 
         page.update()
 

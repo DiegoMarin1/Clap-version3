@@ -5,7 +5,7 @@ from controlador.mensajes import mensaje, validaciones
 from gestores.gestorLiderPolitico import editarDatosUsuario, archivos
 from modelo.modelPrincipal import jefeFamiliar, lider, cilindro
 from modelo.consultas import consulta
-from modelo.modelVista import cartas
+from modelo.modelVista import cartas, seccionesEditar, seccionesEditarCompleja
 
 import modelo.reporte
 from modelo.reporte import Pdf
@@ -411,32 +411,11 @@ class editarDatosJefeFamilia:
         entryNombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), validaciones.validarCamposNot(entryNombre, page, True, validaciones.condicionNombres)])
         entryNombre.value = datosJefeFamilia.nombre
 
-        alertEditNombre = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=10,
-                    controls=[
-                        entryNombre,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarCamposSencillos(page, entryNombre, iDLiderCalle, tablaPedido, tablaCilindros, alertEditNombre, consulta.actualizarNombreJefe, mensaje.nombreEditadoFinal, 3, True)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre))
-                    ]
-                )
-            ]
-        )
+        alertEditNombre = seccionesEditar(page, entryNombre)
+        alertEditNombre.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarCamposSencillos(page, alertEditNombre.entry, iDLiderCalle, tablaPedido, tablaCilindros, alertEditNombre.alert, consulta.actualizarNombreJefe, mensaje.nombreEditadoFinal, 3, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre.alert))])
 
-        page.dialog = alertEditNombre
-        alertEditNombre.open = True
+        page.dialog = alertEditNombre.alert
+        alertEditNombre.alert.open = True
 
         page.update()
 
@@ -445,32 +424,11 @@ class editarDatosJefeFamilia:
         entryApellido = TextField(label="Apellido", hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), validaciones.validarCamposNot(entryApellido, page, False, validaciones.condicionNombres)])
         entryApellido.value = datosJefeFamilia.apellido
 
-        alertEditApellido = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=10,
-                    controls=[
-                        entryApellido,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarCamposSencillos(page, entryApellido, iDLiderCalle, tablaPedido, tablaCilindros, alertEditApellido, consulta.actualizarApellidoJefe, mensaje.apellidoEditadoFinal, 4, False)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido))
-                    ]
-                )
-            ]
-        )
+        alertEditApellido = seccionesEditar(page, entryApellido)
+        alertEditApellido.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarCamposSencillos(page, alertEditApellido.entry, iDLiderCalle, tablaPedido, tablaCilindros, alertEditApellido.alert, consulta.actualizarApellidoJefe, mensaje.apellidoEditadoFinal, 4, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido.alert))])
 
-        page.dialog = alertEditApellido
-        alertEditApellido.open = True
+        page.dialog = alertEditApellido.alert
+        alertEditApellido.alert.open = True
 
         page.update()
 
@@ -512,33 +470,11 @@ class editarDatosJefeFamilia:
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com")])
         selectTipoCorreo.value = tipo
 
-        alertEditCorreo = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=2,
-                    controls=[
-                        entryCorreo,
-                        selectTipoCorreo,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validacionCampoComplejo(page, selectTipoCorreo, entryCorreo, iDLiderCalle, tablaPedido, tablaCilindros, alertEditCorreo, mensaje.correoInvalido, consulta.verificarCorreoEditar, mensaje.correoRegistrado, consulta.actualizarCorreoJefe, mensaje.correoGuardado, 3, False)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo))
-                    ]
-                )
-            ]
-        )
+        alertEditCorreo = seccionesEditarCompleja(page, entryCorreo, selectTipoCorreo)
+        alertEditCorreo.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validacionCampoComplejo(page, alertEditCorreo.entry2, alertEditCorreo.entry, iDLiderCalle, tablaPedido, tablaCilindros, alertEditCorreo.alert, mensaje.correoInvalido, consulta.verificarCorreoEditar, mensaje.correoRegistrado, consulta.actualizarCorreoJefe, mensaje.correoGuardado, 3, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo.alert))])
 
-        page.dialog = alertEditCorreo
-        alertEditCorreo.open = True
+        page.dialog = alertEditCorreo.alert
+        alertEditCorreo.alert.open = True
 
         page.update()
     
@@ -553,33 +489,11 @@ class editarDatosJefeFamilia:
         entryTelefono = TextField(label="N telefono", hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), validaciones.validarCamposNot(entryTelefono, page, False, validaciones.condicionNumeros)])
         entryTelefono.value = telefono
 
-        alertEditTelefono = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=2,
-                    controls=[
-                        selectTipoTelefono,
-                        entryTelefono,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validacionCampoComplejo(page, selectTipoTelefono, entryTelefono, iDLiderCalle, tablaPedido, tablaCilindros, alertEditTelefono, mensaje.telefonoInvalido, consulta.verificarTelefonoEditar, mensaje.telefonoRegistrado, consulta.actualizarTelefonoJefe, mensaje.telefonoGuardado, 7, True)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono))
-                    ]
-                )
-            ]
-        )
+        alertEditTelefono = seccionesEditarCompleja(page, selectTipoTelefono, entryTelefono)
+        alertEditTelefono.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validacionCampoComplejo(page, alertEditTelefono.entry, alertEditTelefono.entry2, iDLiderCalle, tablaPedido, tablaCilindros, alertEditTelefono.alert, mensaje.telefonoInvalido, consulta.verificarTelefonoEditar, mensaje.telefonoRegistrado, consulta.actualizarTelefonoJefe, mensaje.telefonoGuardado, 7, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono.alert))])
 
-        page.dialog = alertEditTelefono
-        alertEditTelefono.open = True
+        page.dialog = alertEditTelefono.alert
+        alertEditTelefono.alert.open = True
 
         page.update()
     
@@ -939,7 +853,7 @@ class editarDatosLiderCalle:
     def cargarDatosLider(page):
         global datosLiderCalle
         resultado = db.consultaConRetorno(consulta.mostrarDatosLider, [mensaje.datosUsuarioLista[0][0],])
-        datosLiderCalle = lider(resultado[0][0], resultado[0][1], resultado[0][2], resultado[0][3], resultado[0][4], resultado[0][5], resultado[0][6], resultado[0][7], resultado[0][8], resultado[0][9], resultado[0][10], resultado[0][11])
+        datosLiderCalle = lider(resultado[0][2], resultado[0][0], resultado[0][1], resultado[0][3], resultado[0][4], resultado[0][5], resultado[0][6], resultado[0][7], resultado[0][8], resultado[0][9], resultado[0][10], resultado[0][11])
 
         gestionPrincipal.nombreLi.value = datosLiderCalle.nombre
         gestionPrincipal.apellidoLi.value = datosLiderCalle.apellido
@@ -955,32 +869,11 @@ class editarDatosLiderCalle:
         entryNombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), validaciones.validarCamposNot(entryNombre, page, False, validaciones.condicionNombres)])
         entryNombre.value = datosLiderCalle.nombre
 
-        alertEditNombre = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=10,
-                    controls=[
-                        entryNombre,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, entryNombre, alertEditNombre, 3, consulta.actualizarNombreLider, slider, editarDatosLiderCalle.cargarDatosLider, mensaje.nombreEditadoFinal, True)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre))
-                    ]
-                )
-            ]
-        )
+        alertEditNombre = seccionesEditar(page, entryNombre)
+        alertEditNombre.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, alertEditNombre.entry, alertEditNombre.alert, 3, consulta.actualizarNombreLider, slider, editarDatosLiderCalle.cargarDatosLider, mensaje.nombreEditadoFinal, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre.alert))])
 
-        page.dialog = alertEditNombre
-        alertEditNombre.open = True
+        page.dialog = alertEditNombre.alert
+        alertEditNombre.alert.open = True
 
         page.update()
 
@@ -990,32 +883,11 @@ class editarDatosLiderCalle:
         entryApellido = TextField(label="Apellido", hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), validaciones.validarCamposNot(entryApellido, page, False, validaciones.condicionNombres)])
         entryApellido.value = datosLiderCalle.apellido
 
-        alertEditApellido = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=10,
-                    controls=[
-                        entryApellido,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, entryApellido, alertEditApellido, 4, consulta.actualizarApellidoLider, slider, editarDatosLiderCalle.cargarDatosLider, mensaje.apellidoEditadoFinal, False)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido))
-                    ]
-                )
-            ]
-        )
+        alertEditApellido = seccionesEditar(page, entryApellido)
+        alertEditApellido.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, alertEditApellido.entry, alertEditApellido.alert, 4, consulta.actualizarApellidoLider, slider, editarDatosLiderCalle.cargarDatosLider, mensaje.apellidoEditadoFinal, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido.alert))])
 
-        page.dialog = alertEditApellido
-        alertEditApellido.open = True
+        page.dialog = alertEditApellido.alert
+        alertEditApellido.alert.open = True
 
         page.update()
 
@@ -1030,33 +902,11 @@ class editarDatosLiderCalle:
         entryTelefono = TextField(label=mensaje.nTelefono, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), validaciones.validarCamposNot(entryTelefono, page, True, validaciones.condicionNumeros)])
         entryTelefono.value = telefono
 
-        alertEditTelefono = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=2,
-                    controls=[
-                        selectTipoTelefono,
-                        entryTelefono,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, selectTipoTelefono, entryTelefono, alertEditTelefono,  mensaje.telefonoInvalido, consulta.verificarTelefonoLider, mensaje.telefonoRegistrado, consulta.actualizarTelefonoLider, editarDatosLiderCalle.cargarDatosLider, mensaje.telefonoGuardado, 7, True)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono))
-                    ]
-                )
-            ]
-        )
+        alertEditTelefono = seccionesEditarCompleja(page, selectTipoTelefono, entryTelefono)
+        alertEditTelefono.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, alertEditTelefono.entry, alertEditTelefono.entry2, alertEditTelefono.alert,  mensaje.telefonoInvalido, consulta.verificarTelefonoLider, mensaje.telefonoRegistrado, consulta.actualizarTelefonoLider, editarDatosLiderCalle.cargarDatosLider, mensaje.telefonoGuardado, 7, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono.alert))])
 
-        page.dialog = alertEditTelefono
-        alertEditTelefono.open = True
+        page.dialog = alertEditTelefono.alert
+        alertEditTelefono.alert.open = True
 
         page.update()
 
@@ -1078,33 +928,11 @@ class editarDatosLiderCalle:
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com")])
         selectTipoCorreo.value = tipo
 
-        alertEditCorreo = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Row(
-                    spacing=2,
-                    controls=[
-                        entryCorreo,
-                        selectTipoCorreo,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, selectTipoCorreo, entryCorreo, alertEditCorreo, mensaje.correoInvalido, consulta.verificarCorreoLider, mensaje.correoRegistrado, consulta.actualizarCorreoLider, editarDatosLiderCalle.cargarDatosLider, mensaje.correoGuardado, 3, False)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo))
-                    ]
-                )
-            ]
-        )
+        alertEditCorreo = seccionesEditarCompleja(page, entryCorreo, selectTipoCorreo)
+        alertEditCorreo.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, alertEditCorreo.entry2, alertEditCorreo.entry, alertEditCorreo.alert, mensaje.correoInvalido, consulta.verificarCorreoLider, mensaje.correoRegistrado, consulta.actualizarCorreoLider, editarDatosLiderCalle.cargarDatosLider, mensaje.correoGuardado, 3, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo.alert))])
 
-        page.dialog = alertEditCorreo
-        alertEditCorreo.open = True
+        page.dialog = alertEditCorreo.alert
+        alertEditCorreo.alert.open = True
 
         page.update()
 
