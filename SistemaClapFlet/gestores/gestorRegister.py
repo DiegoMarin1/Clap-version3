@@ -8,7 +8,7 @@ from modelo.modelPrincipal import lider
 
 class gestionRegister:
     #VALIDA LA 1 SECCION DEL FORMULARIO EN EL QUE PIDE LOS DATOS PERSONALES
-    def formulario1(page, nombre, apellido, cedula, numTelefono, correo, ubicacion, nivelUser, tipoCorreo, codigoTelefono, tipoCedula, formulario, contenedor1, contenedor2):
+    def formulario1(page, nombre, apellido, cedula, numTelefono, correo, ubicacion, nivelUser, tipoCorreo, codigoTelefono, tipoCedula, formulario, contenedor1, contenedor2, encabezado):
         global nuevoUsuario
 
         listaCondicion = [nombre.value, apellido.value, cedula.value, numTelefono.value, correo.value, ubicacion.value, nivelUser.value, tipoCorreo.value, codigoTelefono.value]
@@ -61,10 +61,11 @@ class gestionRegister:
 
         else:
             nuevoUsuario = lider(f"{tipoCedula.value}-{cedula.value}", nombre.value, apellido.value, f"{codigoTelefono.value}-{numTelefono.value}", f"{correo.value}{tipoCorreo.value}", ubicacion.value, True, True, nivelUser.value, True, True, True)
+            encabezado.cambiarColor(encabezado.punto2, encabezado.punto1, encabezado.punto3)
             rutas.animar(formulario, contenedor1, contenedor2, page)
 
     #VALIDA LA 2 SECCION DEL FORMULARIO LA CUAL PIDE LA CONTRASENA Y EL USUARIO
-    def formulario2(page, usuario, contrasena, confirmarContrasena, formulario, contenedor1, contenedor2):
+    def formulario2(page, usuario, contrasena, confirmarContrasena, formulario, contenedor1, contenedor2, encabezado):
         
         listaCondicion = [usuario.value, contrasena.value, confirmarContrasena.value]
         if "" in listaCondicion or (len(usuario.value) in range(1, 5)) or (len(contrasena.value) in range(1, 6)):
@@ -89,6 +90,7 @@ class gestionRegister:
 
         elif contrasena.value == confirmarContrasena.value:
             nuevoUsuario.seccionUsuario(usuario.value, contrasena.value, 1)
+            encabezado.cambiarColor(encabezado.punto3, encabezado.punto1, encabezado.punto2)
             rutas.animar(formulario, contenedor1, contenedor2, page)
 
         else:    

@@ -8,7 +8,6 @@ from views.principal import principal
 from views.recuperar import recuperar
 from views.liderPolitico import liderPolitico
 
-
 def main(page:Page):
     rutas = [
         path(url="/", 

@@ -6,7 +6,7 @@ from controlador.rutas import rutas
 
 class gestionRecuperar:
     #VALIDA LA SECCION 1 DE LA SECCION RECUPERAR DONDE SE PIDE LA CEDULA
-    def formulario1(page, tipoCedula, cedula, widgetPregunta, formulario, contenedor1, contenedor2):
+    def formulario1(page, tipoCedula, cedula, widgetPregunta, formulario, contenedor1, contenedor2, encabezado):
         arregloCedula = f"{tipoCedula.value}-{cedula.value}"
         
         pregunta = db.consultaConRetorno(consulta.verificarCedulaRecuperar, [arregloCedula,])
@@ -22,6 +22,7 @@ class gestionRecuperar:
 
         elif pregunta:
             gestionRecuperar.mostrarPregunta(page, widgetPregunta, pregunta)
+            encabezado.cambiarColor(encabezado.punto2, encabezado.punto1, encabezado.punto3)
             rutas.animar(formulario, contenedor1, contenedor2, page)
 
         else:
@@ -30,7 +31,7 @@ class gestionRecuperar:
             page.update()
 
     #VALIDA LA SECCION 2 DE LA SECCION RECUPERAR DONDE SE PIDE LA RESPUESTA
-    def formulario2(page, tipoCedula, cedula, respuesta, formulario, contenedor1, contenedor2):
+    def formulario2(page, tipoCedula, cedula, respuesta, formulario, contenedor1, contenedor2, encabezado):
         arregloCedulaa = f"{tipoCedula.value}-{cedula.value}"
         resultadoRespuesta =  db.consultaConRetorno(consulta.verificarRespuesta, [arregloCedulaa,])
 
@@ -39,6 +40,7 @@ class gestionRecuperar:
             page.update()
 
         elif resultadoRespuesta[0][0] == respuesta.value:
+            encabezado.cambiarColor(encabezado.punto3, encabezado.punto1, encabezado.punto2)
             rutas.animar(formulario, contenedor1, contenedor2, page)
 
         else:

@@ -1,10 +1,104 @@
 from flet import *
-from flet import CircleAvatar, Icon, icons, margin, Text, Offset, Row, UserControl, padding, Container, border_radius, Column, CrossAxisAlignment, Stack, FontWeight, Page
+from flet import MainAxisAlignment, AlertDialog, alignment, TextThemeStyle, PopupMenuButton, PopupMenuItem, CircleAvatar, Icon, icons, margin, Text, Offset, Row, UserControl, padding, Container, border_radius, Column, CrossAxisAlignment, Stack, FontWeight, Page
 from controlador.conexion import db
 from datetime import datetime
 from controlador.mensajes import mensaje
 from modelo.consultas import consulta
 from controlador.rutas import rutas
+
+class encabezado(UserControl):
+    def __init__(self, page:Page):
+        super().__init__()
+        self.page = page
+        self.punto1 = Container(
+                                                        height=20,
+                                                        width=20,
+                                                        border_radius=border_radius.all(50),
+                                                        bgcolor="blue"
+                                                    )
+        self.punto2 = Container(
+                                                        height=20,
+                                                        width=20,
+                                                        border_radius=border_radius.all(50),
+                                                        bgcolor="white"
+                                                    )
+        self.punto3 = Container(
+                                                        height=20,
+                                                        width=20,
+                                                        border_radius=border_radius.all(50),
+                                                        bgcolor="white"
+                                                    )
+        self.encabezado = Container(
+                        height=150,
+                        alignment=alignment.center,
+                        content=Row(
+                            alignment=MainAxisAlignment.CENTER,
+                            spacing=0,
+                            controls=[
+                                Stack(
+                                    controls=[
+                                        Container(
+                                            width=50, 
+                                            height=50, 
+                                            bgcolor="white", 
+                                            border_radius=border_radius.all(50),
+                                            content=Column(
+                                                horizontal_alignment=CrossAxisAlignment.CENTER,
+                                                alignment=MainAxisAlignment.CENTER,
+                                                controls=[
+                                                    self.punto1,
+                                                ]
+                                            )
+                                        )
+                                    ]
+                                ),
+                                Container(width=70, height=8, bgcolor="white"),
+                                Stack(
+                                    controls=[
+                                        Container(
+                                            width=50, 
+                                            height=50, 
+                                            bgcolor="white", 
+                                            border_radius=border_radius.all(50),
+                                            content=Column(
+                                                horizontal_alignment=CrossAxisAlignment.CENTER,
+                                                alignment=MainAxisAlignment.CENTER,
+                                                controls=[
+                                                    self.punto2,
+                                                ]
+                                            )
+                                        )
+                                    ]
+                                ),
+                                Container(width=80, height=8, bgcolor="white"),
+                                Stack(
+                                    controls=[
+                                        Container(
+                                            width=50, 
+                                            height=50, 
+                                            bgcolor="white", 
+                                            border_radius=border_radius.all(50),
+                                            content=Column(
+                                                horizontal_alignment=CrossAxisAlignment.CENTER,
+                                                alignment=MainAxisAlignment.CENTER,
+                                                controls=[
+                                                    self.punto3,
+                                                ]
+                                            )
+                                        )
+                                    ]
+                                ),
+                            ]
+                        )
+                    )
+
+    def cambiarColor(self, azul, blanco, white):
+        azul.bgcolor = "blue"
+        blanco.bgcolor = "white"
+        white.bgcolor = "white"
+
+        self.update()
+
 
 class seccionesEditar(UserControl):
     def __init__(self, page:Page, entry):

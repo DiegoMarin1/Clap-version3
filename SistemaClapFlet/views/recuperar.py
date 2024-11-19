@@ -5,6 +5,7 @@ from flet_route import Params, Basket
 from gestores.gestorRecuperar import *
 from gestores.gestorRecuperar import gestionRecuperar
 from controlador.mensajes import mensaje, validaciones
+from modelo.modelVista import encabezado
 from controlador.rutas import rutas
 
 class recuperar:
@@ -17,100 +18,23 @@ class recuperar:
         self.tipoCedula = Dropdown(label="Tipo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCedula), options=[
                 dropdown.Option("V"), dropdown.Option("E")])
         self.tipoCedula.value = "V"
-        self.cedula = TextField(label="Cedula", hint_text="Minimo 7 caracteres", border_color="#820000", border_radius=20, width=180, height=60, max_length=8, on_change=lambda _: [mensaje.quitarError(page, self.cedula), validaciones.validarCamposNot(self.cedula, page, True, validaciones.condicionNumeros)])
+        self.cedula = TextField(label="Cedula", hint_text=mensaje.minimoCaracteres(7), border_color="#820000", border_radius=20, width=180, height=60, max_length=8, on_change=lambda _: [mensaje.quitarError(page, self.cedula), validaciones.validarCamposNot(self.cedula, page, True, validaciones.condicionNumeros)])
         self.pregunta = Text("", style=TextThemeStyle.TITLE_MEDIUM)
         self.respuesta = TextField(hint_text="Escriba su respuesta", capitalization=TextCapitalization.SENTENCES, label="Respuesta", border_radius=30, border_color="#820000", width=280, height=60, on_change=lambda _:[mensaje.quitarError(page, self.respuesta), validaciones.validarCamposNot(self.respuesta, page, False, validaciones.condicionNombres)])
-        self.contrasena = TextField(hint_text="Minimo 6 caracteres", label="Contraseña", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, width=280, height=60, max_length=12, on_change=lambda _:[mensaje.quitarError(page, self.contrasena), validaciones.validarCamposIn(self.contrasena, page, validaciones.condicionEspacios)])
+        self.contrasena = TextField(hint_text=mensaje.minimoCaracteres(6), label="Contraseña", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, width=280, height=60, max_length=12, on_change=lambda _:[mensaje.quitarError(page, self.contrasena), validaciones.validarCamposIn(self.contrasena, page, validaciones.condicionEspacios)])
         self.confimarContrasena = TextField(hint_text="Confirmar contraseña", label="Confirmar", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, width=280, height=60, on_change=lambda _:[mensaje.quitarError(page, self.confimarContrasena), validaciones.validarCamposIn(self.confimarContrasena, page, validaciones.condicionEspacios)])
 
         page.title = "CLAP"
         page.window_resizable = False
         page.window_maximizable = False
         #CONTENEDORES
+        self.encabezado = encabezado(page)
         self.containerCedula = Container(
             height=725,
             width=500,
             content=Column(
-                controls=[
-                    Container(
-                        height=150,
-                        alignment=alignment.center,
-                        content=Row(
-                            alignment=MainAxisAlignment.CENTER,
-                            spacing=0,
-                            controls=[
-                                Stack(
-                                    controls=[
-                                        Container(
-                                            width=50, 
-                                            height=50, 
-                                            bgcolor="white", 
-                                            border_radius=border_radius.all(50),
-                                            content=Column(
-                                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                                                alignment=MainAxisAlignment.CENTER,
-                                                controls=[
-                                                    Container(
-                                                        height=20,
-                                                        width=20,
-                                                        border_radius=border_radius.all(50),
-                                                        bgcolor="blue"
-                                                    )
-                                                ]
-                                            )
-                                        )
-                                    ]
-                                ),
-                                Container(width=70, height=8, bgcolor="white"),
-                                Stack(
-                                    controls=[
-                                        Container(
-                                            width=50, 
-                                            height=50, 
-                                            bgcolor="white", 
-                                            border_radius=border_radius.all(50),
-                                            content=Column(
-                                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                                                alignment=MainAxisAlignment.CENTER,
-                                                controls=[
-                                                    Container(
-                                                        height=20,
-                                                        width=20,
-                                                        border_radius=border_radius.all(50),
-                                                        bgcolor="white"
-                                                    )
-                                                ]
-                                            )
-                                        )
-                                    ]
-                                ),
-                                Container(width=80, height=8, bgcolor="white"),
-                                Stack(
-                                    controls=[
-                                        Container(
-                                            width=50, 
-                                            height=50, 
-                                            bgcolor="white", 
-                                            border_radius=border_radius.all(50),
-                                            content=Column(
-                                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                                                alignment=MainAxisAlignment.CENTER,
-                                                controls=[
-                                                    Container(
-                                                        height=20,
-                                                        width=20,
-                                                        border_radius=border_radius.all(50),
-                                                        bgcolor="white"
-                                                    )
-                                                ]
-                                            )
-                                        )
-                                    ]
-                                ),
-                            ]
-                        )
-                    ),
-
+                controls=[   
+                    self.encabezado.encabezado,
                     Container(
                         bgcolor="white",
                         height=550,
@@ -145,85 +69,7 @@ class recuperar:
             width=500,
             content=Column(
                 controls=[
-                    Container(
-                        height=150,
-                        alignment=alignment.center,
-                        content=Row(
-                            alignment=MainAxisAlignment.CENTER,
-                            spacing=0,
-                            controls=[
-                                Stack(
-                                    controls=[
-                                        Container(
-                                            width=50, 
-                                            height=50, 
-                                            bgcolor="white", 
-                                            border_radius=border_radius.all(50),
-                                            content=Column(
-                                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                                                alignment=MainAxisAlignment.CENTER,
-                                                controls=[
-                                                    Container(
-                                                        height=20,
-                                                        width=20,
-                                                        border_radius=border_radius.all(50),
-                                                        bgcolor="white"
-                                                    )
-                                                ]
-                                            )
-                                        )
-                                    ]
-                                ),
-                                Container(width=70, height=8, bgcolor="white"),
-                                Stack(
-                                    controls=[
-                                        Container(
-                                            width=50, 
-                                            height=50, 
-                                            bgcolor="white", 
-                                            border_radius=border_radius.all(50),
-                                            content=Column(
-                                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                                                alignment=MainAxisAlignment.CENTER,
-                                                controls=[
-                                                    Container(
-                                                        height=20,
-                                                        width=20,
-                                                        border_radius=border_radius.all(50),
-                                                        bgcolor="blue"
-                                                    )
-                                                ]
-                                            )
-                                        )
-                                    ]
-                                ),
-                                Container(width=80, height=8, bgcolor="white"),
-                                Stack(
-                                    controls=[
-                                        Container(
-                                            width=50, 
-                                            height=50, 
-                                            bgcolor="white", 
-                                            border_radius=border_radius.all(50),
-                                            content=Column(
-                                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                                                alignment=MainAxisAlignment.CENTER,
-                                                controls=[
-                                                    Container(
-                                                        height=20,
-                                                        width=20,
-                                                        border_radius=border_radius.all(50),
-                                                        bgcolor="white"
-                                                    )
-                                                ]
-                                            )
-                                        )
-                                    ]
-                                ),
-                            ]
-                        )
-                    ),
-
+                    self.encabezado.encabezado,
                     Container(
                         bgcolor="white",
                         height=550,
@@ -252,85 +98,7 @@ class recuperar:
             width=500,
             content=Column(
                 controls=[
-                    Container(
-                        height=150,
-                        alignment=alignment.center,
-                        content=Row(
-                            alignment=MainAxisAlignment.CENTER,
-                            spacing=0,
-                            controls=[
-                                Stack(
-                                    controls=[
-                                        Container(
-                                            width=50, 
-                                            height=50, 
-                                            bgcolor="white", 
-                                            border_radius=border_radius.all(50),
-                                            content=Column(
-                                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                                                alignment=MainAxisAlignment.CENTER,
-                                                controls=[
-                                                    Container(
-                                                        height=20,
-                                                        width=20,
-                                                        border_radius=border_radius.all(50),
-                                                        bgcolor="white"
-                                                    )
-                                                ]
-                                            )
-                                        )
-                                    ]
-                                ),
-                                Container(width=70, height=8, bgcolor="white"),
-                                Stack(
-                                    controls=[
-                                        Container(
-                                            width=50, 
-                                            height=50, 
-                                            bgcolor="white", 
-                                            border_radius=border_radius.all(50),
-                                            content=Column(
-                                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                                                alignment=MainAxisAlignment.CENTER,
-                                                controls=[
-                                                    Container(
-                                                        height=20,
-                                                        width=20,
-                                                        border_radius=border_radius.all(50),
-                                                        bgcolor="white"
-                                                    )
-                                                ]
-                                            )
-                                        )
-                                    ]
-                                ),
-                                Container(width=80, height=8, bgcolor="white"),
-                                Stack(
-                                    controls=[
-                                        Container(
-                                            width=50, 
-                                            height=50, 
-                                            bgcolor="white", 
-                                            border_radius=border_radius.all(50),
-                                            content=Column(
-                                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                                                alignment=MainAxisAlignment.CENTER,
-                                                controls=[
-                                                    Container(
-                                                        height=20,
-                                                        width=20,
-                                                        border_radius=border_radius.all(50),
-                                                        bgcolor="blue"
-                                                    )
-                                                ]
-                                            )
-                                        )
-                                    ]
-                                ),
-                            ]
-                        )
-                    ),
-
+                    self.encabezado.encabezado,
                     Container(
                         bgcolor="white",
                         height=550,
@@ -380,14 +148,14 @@ class recuperar:
         pagee = pagee
         contenedor1 = contenedor1
         contenedor2 = contenedor2
-        gestionRecuperar.formulario1(pagee, self.tipoCedula, self.cedula, self.pregunta, self.formulario, contenedor1, contenedor2)
+        gestionRecuperar.formulario1(pagee, self.tipoCedula, self.cedula, self.pregunta, self.formulario, contenedor1, contenedor2, self.encabezado)
         
 
     def gestionar2(self, pagee, contenedor1, contenedor2):
         pagee = pagee
         contenedor1 = contenedor1
         contenedor2 = contenedor2
-        gestionRecuperar.formulario2(pagee, self.tipoCedula, self.cedula, self.respuesta, self.formulario, contenedor1, contenedor2)
+        gestionRecuperar.formulario2(pagee, self.tipoCedula, self.cedula, self.respuesta, self.formulario, contenedor1, contenedor2, self.encabezado)
 
     def gestionar3(self, pagee):
         pagee = pagee
@@ -397,10 +165,12 @@ class recuperar:
         pagee = pagee
         contenedor1 = contenedor1
         contenedor2 = contenedor2
+        self.encabezado.cambiarColor(self.encabezado.punto1, self.encabezado.punto2, self.encabezado.punto3)
         gestionRecuperar.regresarF1(pagee, self.formulario, contenedor1, contenedor2)
 
     def regresar2(self, pagee, contenedor1, contenedor2):
         pagee = pagee
         contenedor1 = contenedor1
         contenedor2 = contenedor2
+        self.encabezado.cambiarColor(self.encabezado.punto2, self.encabezado.punto1, self.encabezado.punto3)
         gestionRecuperar.regresarF2(pagee, self.formulario, contenedor1, contenedor2)
