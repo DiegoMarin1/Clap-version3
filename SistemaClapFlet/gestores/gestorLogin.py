@@ -6,13 +6,12 @@ from controlador.mensajes import mensaje
 from controlador.rutas import rutas
 from modelo.consultas import consulta
 
-#CORREGIR LA VALIDACION QUE CUANDO EL USUARIO ESTE BLOQUEADO NO SIGA APARECIENDO EL MENSAJE DE INTENTOS FAC|LLIDOS ASI SE INTRODUZCA LA CONTRASENA MALA
 
+#CORREGIR LA VALIDACION QUE CUANDO EL USUARIO ESTE BLOQUEADO NO SIGA APARECIENDO EL MENSAJE DE INTENTOS FAC|LLIDOS ASI SE INTRODUZCA LA CONTRASENA MALA
 class gestionLogin:
     intentos = 0
-
+    
     def camposVacios(page, usuario, contrasena):
-
             if (usuario.value == "") or (contrasena.value == ""):
                 if usuario.value == "":
                     usuario.error_text = mensaje.campoFaltante

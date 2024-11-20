@@ -1,5 +1,5 @@
 from flet import *
-from flet import View, Stack, AnimatedSwitcher, AnimatedSwitcherTransition, AnimationCurve, Container, Text, SnackBar, Dropdown, dropdown, alignment, border_radius, border, TextCapitalization, TextField, CrossAxisAlignment, MainAxisAlignment, Column, FontWeight, TextButton, AlertDialog, padding, TextThemeStyle, DataRow, DataCell, Row, icons, IconButton, ElevatedButton
+from flet import InputFilter, TextOnlyInputFilter, NumbersOnlyInputFilter, View, Stack, AnimatedSwitcher, AnimatedSwitcherTransition, AnimationCurve, Container, Text, SnackBar, Dropdown, dropdown, alignment, border_radius, border, TextCapitalization, TextField, CrossAxisAlignment, MainAxisAlignment, Column, FontWeight, TextButton, AlertDialog, padding, TextThemeStyle, DataRow, DataCell, Row, icons, IconButton, ElevatedButton
 
 from flet_route import Params, Basket
 from gestores.gestorRecuperar import *
@@ -18,11 +18,11 @@ class recuperar:
         self.tipoCedula = Dropdown(label="Tipo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCedula), options=[
                 dropdown.Option("V"), dropdown.Option("E")])
         self.tipoCedula.value = "V"
-        self.cedula = TextField(label="Cedula", hint_text=mensaje.minimoCaracteres(7), border_color="#820000", border_radius=20, width=180, height=60, max_length=8, on_change=lambda _: [mensaje.quitarError(page, self.cedula), validaciones.validarCamposNot(self.cedula, page, True, validaciones.condicionNumeros)])
+        self.cedula = TextField(label="Cedula", hint_text=mensaje.minimoCaracteres(7), border_color="#820000", border_radius=20, width=180, height=60, max_length=8, input_filter=NumbersOnlyInputFilter(), on_change=lambda _: mensaje.quitarError(page, self.cedula))
         self.pregunta = Text("", style=TextThemeStyle.TITLE_MEDIUM)
-        self.respuesta = TextField(hint_text="Escriba su respuesta", capitalization=TextCapitalization.SENTENCES, label="Respuesta", border_radius=30, border_color="#820000", width=280, height=60, on_change=lambda _:[mensaje.quitarError(page, self.respuesta), validaciones.validarCamposNot(self.respuesta, page, False, validaciones.condicionNombres)])
-        self.contrasena = TextField(hint_text=mensaje.minimoCaracteres(6), label="Contraseña", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, width=280, height=60, max_length=12, on_change=lambda _:[mensaje.quitarError(page, self.contrasena), validaciones.validarCamposIn(self.contrasena, page, validaciones.condicionEspacios)])
-        self.confimarContrasena = TextField(hint_text="Confirmar contraseña", label="Confirmar", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, width=280, height=60, on_change=lambda _:[mensaje.quitarError(page, self.confimarContrasena), validaciones.validarCamposIn(self.confimarContrasena, page, validaciones.condicionEspacios)])
+        self.respuesta = TextField(hint_text="Escriba su respuesta", capitalization=TextCapitalization.SENTENCES, label="Respuesta", border_radius=30, border_color="#820000", width=280, height=60, input_filter=TextOnlyInputFilter(), on_change=lambda _:mensaje.quitarError(page, self.respuesta))
+        self.contrasena = TextField(hint_text=mensaje.minimoCaracteres(6), label="Contraseña", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, width=280, height=60, max_length=12, input_filter=InputFilter(regex_string=validaciones.condicionEspacio), on_change=lambda _:mensaje.quitarError(page, self.contrasena))
+        self.confimarContrasena = TextField(hint_text="Confirmar contraseña", label="Confirmar", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, width=280, height=60, input_filter=InputFilter(regex_string=validaciones.condicionEspacio), on_change=lambda _:mensaje.quitarError(page, self.confimarContrasena))
 
         page.title = "CLAP"
         page.window_resizable = False

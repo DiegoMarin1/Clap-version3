@@ -10,45 +10,18 @@ from controlador.rutas import rutas
 from controlador.conexion import db
 from modelo.consultas import consulta
 
+
 class login:
     def __init__(self):
-        #LOGO
-        self.logo = Image(src=rf"{rutas.rutaActualArreglada}\img\clap.png")
-
-    def view(self, page:Page, params:Params, basket:Basket):
-        #CAPTURAR EL EVENTO DE CIERRE DE VENTANA
-        def window_event(e):
-            if e.data == "close":
-                if bool(mensaje.datosUsuarioLista) == True:
-                    fechaS = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-                    db.consultaSinRetorno(consulta.guardarSalidaBitacora, [fechaS, mensaje.datosUsuarioLista[0][5], mensaje.datosUsuarioLista[0][4]])
-                    page.window.destroy()
-                else:
-                    page.window.destroy()
-
-        #CARACTERISTICAS DE LA VENTANA
-        page.window.prevent_close = True
-        page.window.on_event =  window_event
-        page.window_maximizable = False
-        page.title = "CLAP"
-        page.window_resizable = False
-        page.window_height = "725"
-        page.window_width = "500"
-        page.window_center()
-        page.window_bgcolor = colors.TRANSPARENT
-        page.bgcolor = colors.TRANSPARENT
-        sleep(1)
-        page.window_visible = True
-
         #WIDGETS
-        self.usuario = TextField(hint_text=mensaje.ingresaUsuario, label="Usuario", border_radius=30, border_color="#820000", prefix_icon=icons.PERSON, width=300, height=60, on_change=lambda _: mensaje.quitarError(page, self.usuario))
-        self.contrasena = TextField(hint_text=mensaje.ingresaContrasena, label="Contraseña", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, password=True, can_reveal_password=True, width=300, height=60, on_change=lambda _: mensaje.quitarError(page, self.contrasena))
-        self.text_recuperar = TextButton(mensaje.recuperarContrasena, on_click=lambda _: rutas.enrutamiento(page, rutas.routeRecuperar))
-        self.iniciar_sesion = ElevatedButton(mensaje.inicioSeccion, width=300, bgcolor="#cb3234", color="#ffffff", on_click=lambda _:gestionLogin.camposVacios(page, self.usuario, self.contrasena))
+        self.logo = Image(src=rf"{rutas.rutaActualArreglada}\img\clap.png")
+        self.usuario = TextField(hint_text=mensaje.ingresaUsuario, label="Usuario", border_radius=30, border_color="#820000", prefix_icon=icons.PERSON, width=300, height=60)
+        self.contrasena = TextField(hint_text=mensaje.ingresaContrasena, label="Contraseña", border_radius=30, border_color="#820000", prefix_icon=icons.LOCK, password=True, can_reveal_password=True, width=300, height=60)
+        self.text_recuperar = TextButton(mensaje.recuperarContrasena)
+        self.iniciar_sesion = ElevatedButton(mensaje.inicioSeccion, width=300, bgcolor="#cb3234", color="#ffffff")
         self.registrarTxt = Text(mensaje.registrate)
-        self.registrarBtn =  TextButton(mensaje.crearCuenta, on_click=lambda _: rutas.enrutamiento(page, rutas.routeRegistrar))
+        self.registrarBtn =  TextButton(mensaje.crearCuenta)
         self.derechos_autor = Text(mensaje.derechosAutores, size=15)
-
         #CONTENIDO DE LA PAGINA
         self.body = Container(
             height=690,
@@ -90,6 +63,38 @@ class login:
                 ]
             )
         )
+
+    def view(self, page:Page, params:Params, basket:Basket):
+        #CAPTURAR EL EVENTO DE CIERRE DE VENTANA
+        def window_event(e):
+            if e.data == "close":
+                if bool(mensaje.datosUsuarioLista) == True:
+                    fechaS = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+                    db.consultaSinRetorno(consulta.guardarSalidaBitacora, [fechaS, mensaje.datosUsuarioLista[0][5], mensaje.datosUsuarioLista[0][4]])
+                    page.window.destroy()
+                else:
+                    page.window.destroy()
+
+        #CARACTERISTICAS DE LA VENTANA
+        page.window.prevent_close = True
+        page.window.on_event =  window_event
+        page.window_maximizable = False
+        page.title = "CLAP"
+        page.window_resizable = False
+        page.window_height = "725"
+        page.window_width = "500"
+        page.window_center()
+        page.window_bgcolor = colors.TRANSPARENT
+        page.bgcolor = colors.TRANSPARENT
+        sleep(1)
+        page.window_visible = True
+
+        #ASIGNAR FUNCIONES BTN
+        self.usuario.on_change = lambda _: mensaje.quitarError(page, self.usuario)
+        self.contrasena.on_change = lambda _: mensaje.quitarError(page, self.contrasena)
+        self.text_recuperar.on_click = lambda _: rutas.enrutamiento(page, rutas.routeRecuperar)
+        self.iniciar_sesion.on_click = lambda _:gestionLogin.camposVacios(page, self.usuario, self.contrasena)
+        self.registrarBtn.on_click = lambda _: rutas.enrutamiento(page, rutas.routeRegistrar)        
 
         return View(
             "/",

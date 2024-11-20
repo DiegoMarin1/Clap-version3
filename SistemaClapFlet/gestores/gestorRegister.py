@@ -1,6 +1,6 @@
 from flet import SnackBar, Text, AlertDialog, dropdown
 from controlador.conexion import db
-from controlador.mensajes import mensaje
+from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas
 from modelo.consultas import consulta
 from modelo.modelPrincipal import lider
@@ -11,117 +11,84 @@ class gestionRegister:
     def formulario1(page, nombre, apellido, cedula, numTelefono, correo, ubicacion, nivelUser, tipoCorreo, codigoTelefono, tipoCedula, formulario, contenedor1, contenedor2, encabezado):
         global nuevoUsuario
 
-        listaCondicion = [nombre.value, apellido.value, cedula.value, numTelefono.value, correo.value, ubicacion.value, nivelUser.value, tipoCorreo.value, codigoTelefono.value]
-        if ("" or None) in listaCondicion or (len(nombre.value) in range(1, 3)) or (len(apellido.value) in range(1, 4)) or (len(cedula.value) in range(1, 7)) or (len(numTelefono.value) in range(1, 7)) or (len(ubicacion.value) in range(1, 3)):
-            #VALIDA TODOS LOS CAMPOS VACIOS, MEJORA IMPLEMENTADA
-            for control in (nombre, apellido, cedula, numTelefono, correo, ubicacion):
-                if not control.value:
-                    control.error_text = mensaje.campoFaltante
-                    page.update()
+        listaCondicion = {
+            "nombre" : {"min":3},
+            "apellido" : {"min":4},
+            "cedula" : {"min":7, "query":consulta.verficarCedula, "param":[f"{tipoCedula.value}-{cedula.value}",], "msj":"Esta cedula ya esta ligada a un usuario"},
+            "numTelefono" : {"min":7, "query":consulta.verficarNumero, "param":[f"{codigoTelefono.value}-{numTelefono.value}",], "msj":"Este numero de telefono ya esta asignado a un usuario"},
+            "correo" : {"min":3, "query":consulta.verificarCorreo, "param":[f"{correo.value}{tipoCorreo.value}",], "msj":"Este correo ya esta en uso"},
+            "ubicacion" : {"min":3, "query":consulta.verficarUbicacion, "param":[ubicacion.value,], "msj":"Esta ubicacion ya esta en uso"},
+            "nivelUser" : {"min":4},
+            "tipoCorreo" : {"min":4},
+            "codigoTelefono" : {"min":4}
+        }
+        todoValido = True
 
-            if len(nombre.value) in range(1, 3):
-                nombre.error_text = mensaje.minimoCaracteres(3)
-                page.update()
+        for nombreCampo, config in listaCondicion.items():
+            if not (eval(nombreCampo).value) or (len(eval(nombreCampo).value) < config["min"]):
+                validaciones.validarCampos(page, eval(nombreCampo), config["min"])
+                todoValido = False
+            if "query" in config:
+                if bool(validaciones.validarConsultas(page, config["query"], config["param"], config["msj"]) == False):
+                    todoValido = False
 
-            if len(apellido.value) in range(1, 4):
-                apellido.error_text = mensaje.minimoCaracteres(4)
-                page.update()
-            
-            if len(cedula.value) in range(1, 7):
-                cedula.error_text = mensaje.minimoCaracteres(7)
-                page.update()
-            
-            if len(numTelefono.value) in range(1, 7):
-                numTelefono.error_text = mensaje.telefonoInvalido
-                page.update()
-
-            if len(ubicacion.value) in range(1, 3):
-                ubicacion.error_text = mensaje.minimoCaracteres(3)
-                page.update()
-            
-        elif db.consultaConRetorno(consulta.verficarUbicacion, [ubicacion.value,]):
-            page.snack_bar = SnackBar(content=Text("Esta ubicacion ya esta en uso"))
-            page.snack_bar.open = True
-            page.update()
-
-        elif db.consultaConRetorno(consulta.verficarCedula, [f"{tipoCedula.value}-{cedula.value}",]):
-            page.snack_bar = SnackBar(content=Text("Esta cedula ya esta ligada a un usuario"))
-            page.snack_bar.open = True
-            page.update()
-
-        elif db.consultaConRetorno(consulta.verficarNumero, [f"{codigoTelefono.value}-{numTelefono.value}",]):
-            page.snack_bar = SnackBar(content=Text("Este numero de telefono ya esta asignado a un usuario"))
-            page.snack_bar.open = True
-            page.update()
-
-        elif db.consultaConRetorno(consulta.verificarCorreo, [f"{correo.value}{tipoCorreo.value}",]):
-            page.snack_bar = SnackBar(content=Text("Este correo ya esta en uso"))
-            page.snack_bar.open = True
-            page.update()
-
-        else:
+        if todoValido:
             nuevoUsuario = lider(f"{tipoCedula.value}-{cedula.value}", nombre.value, apellido.value, f"{codigoTelefono.value}-{numTelefono.value}", f"{correo.value}{tipoCorreo.value}", ubicacion.value, True, True, nivelUser.value, True, True, True)
             encabezado.cambiarColor(encabezado.punto2, encabezado.punto1, encabezado.punto3)
             rutas.animar(formulario, contenedor1, contenedor2, page)
 
+
     #VALIDA LA 2 SECCION DEL FORMULARIO LA CUAL PIDE LA CONTRASENA Y EL USUARIO
     def formulario2(page, usuario, contrasena, confirmarContrasena, formulario, contenedor1, contenedor2, encabezado):
         
-        listaCondicion = [usuario.value, contrasena.value, confirmarContrasena.value]
-        if "" in listaCondicion or (len(usuario.value) in range(1, 5)) or (len(contrasena.value) in range(1, 6)):
+        listaCondicion = {
+            "usuario" : {"min":5, "query":consulta.verificarNombreUsuario, "param":[usuario.value,], "msj":"Nombre de Usuario ya existente"},
+            "contrasena" : {"min":6},
+            "confirmarContrasena" : {"min":6}
+        }
+        todoValido = True
 
-            for control in (usuario, contrasena, confirmarContrasena):
-                if not control.value:
-                    control.error_text = mensaje.campoFaltante
-                    page.update()
-            
-            if len(usuario.value) in range(1, 5):
-                usuario.error_text = mensaje.minimoCaracteres(5)
+        for nombreCampo, config in listaCondicion.items():
+            if not (eval(nombreCampo).value) or (len(eval(nombreCampo).value) < config["min"]):
+                validaciones.validarCampos(page, eval(nombreCampo), config["min"])
+                todoValido = False
+            if "query" in config:
+                if bool(validaciones.validarConsultas(page, config["query"], config["param"], config["msj"]) == False):
+                    todoValido = False
+
+        if todoValido:
+            if contrasena.value == confirmarContrasena.value:
+                nuevoUsuario.seccionUsuario(usuario.value, contrasena.value, 1)
+                encabezado.cambiarColor(encabezado.punto3, encabezado.punto1, encabezado.punto2)
+                rutas.animar(formulario, contenedor1, contenedor2, page)
+
+            else:    
+                page.snack_bar = SnackBar(content=Text("La contraseña no coinciden"))
+                page.snack_bar.open = True
                 page.update()
-
-            if len(contrasena.value) in range(1, 6):
-                contrasena.error_text = mensaje.minimoCaracteres(6)
-                page.update()
-        
-        elif db.consultaConRetorno(consulta.verificarNombreUsuario, [usuario.value,]):
-            page.snack_bar = SnackBar(content=Text("Nombre de Usuario ya existente"))
-            page.snack_bar.open = True
-            page.update()
-
-        elif contrasena.value == confirmarContrasena.value:
-            nuevoUsuario.seccionUsuario(usuario.value, contrasena.value, 1)
-            encabezado.cambiarColor(encabezado.punto3, encabezado.punto1, encabezado.punto2)
-            rutas.animar(formulario, contenedor1, contenedor2, page)
-
-        else:    
-            page.snack_bar = SnackBar(content=Text("La contraseña no coinciden"))
-            page.snack_bar.open = True
-            page.update()
 
     #VALIDA LA ULTIMA SECCION DEL FORMULARIO EN LA CUAL VALIDA EL METODO DE SEGURIDAD
     def formulario3(page, pregunta, respuesta):
         textGuardar = AlertDialog(title=Text("Usuario registrado correctamente"))
 
-        if (pregunta.value == None) or (respuesta.value == "") or (len(respuesta.value) in range (1, 3)):          
-            if respuesta.value == "":
-                respuesta.error_text = mensaje.campoFaltante
-                page.update()
+        listaCondicion = {
+            "pregunta" : {"min":1},
+            "respuesta" : {"min":3},
+        }
+        todoValido = True
 
-            if pregunta.value == None:
-                pregunta.error_text = mensaje.campoFaltante
-                page.update()
+        for nombreCampo, config in listaCondicion.items():
+            if not (eval(nombreCampo).value) or (len(eval(nombreCampo).value) < config["min"]):
+                validaciones.validarCampos(page, eval(nombreCampo), config["min"])
+                todoValido = False
+            if "query" in config:
+                if bool(validaciones.validarConsultas(page, config["query"], config["param"], config["msj"]) == False):
+                    todoValido = False
 
-            if len(respuesta.value) in range (1, 3):
-                respuesta.error_text = mensaje.minimoCaracteres(3)
-                page.update()
-
-            else:
-                return
-
-        else:
+        if todoValido:
             nuevoUsuario.seccionPregunta(respuesta.value, pregunta.value)
             gestionRegister.guardarUsuario(page, textGuardar)
-            
+
     def guardarUsuario(page, mensaje):
         nivelUsuario = 2
         #OBTENER ID PREGUNTA

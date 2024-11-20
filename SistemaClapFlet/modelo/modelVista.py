@@ -1,5 +1,5 @@
 from flet import *
-from flet import MainAxisAlignment, AlertDialog, alignment, TextThemeStyle, PopupMenuButton, PopupMenuItem, CircleAvatar, Icon, icons, margin, Text, Offset, Row, UserControl, padding, Container, border_radius, Column, CrossAxisAlignment, Stack, FontWeight, Page
+from flet import AlertDialog,  MainAxisAlignment, Alignment, TextTheme, PopupMenuButton, PopupMenuItem, MainAxisAlignment, AlertDialog, alignment, TextThemeStyle, PopupMenuButton, PopupMenuItem, CircleAvatar, Icon, icons, margin, Text, Offset, Row, UserControl, padding, Container, border_radius, Column, CrossAxisAlignment, Stack, FontWeight, Page
 from controlador.conexion import db
 from datetime import datetime
 from controlador.mensajes import mensaje

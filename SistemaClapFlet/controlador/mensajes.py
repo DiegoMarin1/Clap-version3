@@ -2,6 +2,7 @@ from datetime import datetime
 from controlador.conexion import db
 from modelo.consultas import consulta
 import pathlib
+from flet import *
 
 class mensaje:
     datosUsuarioLista = []
@@ -99,42 +100,22 @@ class mensaje:
 
 class validaciones:
     #CONDICIONES
-    condicionNumeros = "0123456789"
-    condicionAlfanumericos = "0123456789 qwertyuiopasdfghjklzxcvbnmñQWERTYUIOPASDFGHJKLZXCVBNMÑ"
-    condicionNombres = "qwertyuiopasdfghjklzxcvbnmñQWERTYUIOPASDFGHJKLZXCVBNMÑ,"
-    condicinCorreo = r" @!#$%^&*()_-=+][}{\|';:<>/?`~.,´´¿¡"
-    condicionEspacios = " "
+    condicionAlfanum = r"^[0-9A-Za-z]*$"
+    condicionEspacio = r"^[^\s]+$"
     
-    def validarCamposNot(campo, pagee, valor, condicion):
-        digitos = campo.value
-        #PARA NUMEROS Y LETRAS
-        if valor == True and digitos.isdigit():
-            pass
-        #PARA NOMBRES
-        if valor == False and digitos.isalpha():
-            pass
-        else:
-            for i in digitos:
-                if i not in condicion:
-                    digitos = digitos.replace(i, "", 1)
-
-            campo.value = digitos
-            pagee.update()
-
-    def validarCamposIn(campo, pagee, condicion):
-        digitos = campo.value
-
-        if digitos.isspace():
-            for i in digitos:
-                if i in condicion:
-                    digitos = digitos.replace(i, "", 1)
-
-                    campo.value = digitos
-                    pagee.update()
-        else:
-            for i in digitos:
-                if i in condicion:
-                    digitos = digitos.replace(i, "", 1)
-
-            campo.value = digitos
-            pagee.update()
+    def validarCampos(page, campo, min):
+        if not campo.value:
+            campo.error_text = mensaje.campoFaltante
+            page.update()
+            return False
+        elif len(campo.value) < min:
+            campo.error_text = mensaje.minimoCaracteres(min)
+            page.update()
+            return False
+    
+    def validarConsultas(page, consulta, parametros, mensaje):
+        if db.consultaConRetorno(consulta, parametros):
+            page.snack_bar = SnackBar(content=Text(mensaje))
+            page.snack_bar.open = True
+            page.update()
+            return False
