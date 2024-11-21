@@ -2,7 +2,7 @@ from flet import ScrollMode, Container, Text, SnackBar, Dropdown, dropdown, alig
 from controlador.conexion import db
 from controlador.rutas import rutas
 from controlador.mensajes import mensaje, validaciones
-from gestores.gestorLiderPolitico import archivos
+from controlador.historial import historial
 from modelo.modelPrincipal import jefeFamiliar, lider, cilindro
 from modelo.consultas import consulta
 from modelo.modelVista import seccionesEditar, seccionesEditarCompleja
@@ -474,64 +474,10 @@ class reporteJornada:
             page.snack_bar.open = True
             page.update()
 
-class historial:
-    def abrirHistorial(page, fechaa, idss):
-        gestionPrincipal.tablaLlenarHistorial.rows.clear()
-        gestionPrincipal.tablaLlenarHistorial.rows = historial.llenarHistroial(page, idss)
-
-        alertHistorial = AlertDialog(
-            content=Column(
-                controls=[
-                    Text(f"Jornada realizada el {fechaa}"),
-                    Container(
-                        bgcolor="white",
-                        height=550,
-                        border_radius=border_radius.all(7),  
-                        content=Column(
-                            expand=True,
-                            height=550,
-                            scroll=ScrollMode.ALWAYS,
-                            controls=[
-                                gestionPrincipal.tablaLlenarHistorial,
-                            ]
-                        )
-                    ),
-                ]
-            ),
-            actions=[ElevatedButton("Descargar Pdf", on_click=lambda _:archivoPdf.descargarArchivo(page, alertHistorial, idss)), ElevatedButton("Regresar", on_click=lambda _:mensaje.cerrarAlert(page, alertHistorial))]
-        )
-
-        page.dialog = alertHistorial
-        alertHistorial.open = True
-
-        page.update()
-
-    def llenarHistroial(page, ids):
-        resultado = db.consultaConRetorno(consulta.obtenerHistorial, [ids,])
-
-        for idss, cii, nom, ape, empresa, tamano, pico, fech in resultado:
-            gestionPrincipal.contenido.append(DataRow(
-                color="WHITE",
-                cells=[
-                    DataCell(Text(f"{cii}")),
-                    DataCell(Text(f"{nom}")),
-                    DataCell(Text(f"{ape}")),
-                    DataCell(Text(f"{empresa}")),
-                    DataCell(Text(f"{tamano}")),
-                    DataCell(Text(f"{pico}")),
-                    DataCell(Text(f"{fech}")),
-                ],
-            ),
-            )
-
-            page.update()
-
-        return gestionPrincipal.contenido
-
 class archivoPdf:
     #LIMPIAN LOS CONTENEDORES ANTES DE CARGAR LA INFORAMCION
-    def volverGenerarArchivos(page):
-        archivos.volverGenerarArchivos(page, consulta.obtenerIdArchivos, mensaje.datosUsuarioLista[0][0], gestionPrincipal.tablaSeleccionarHistorial, historial.abrirHistorial)
+    def volverGenerarArchivo(instancia):
+        instancia.volverGenerarArchivos(consulta.obtenerIdArchivos, mensaje.datosUsuarioLista[0][0])
 
 class editarDatosJefeFamilia:
     #MOSTRAR LOS DATOS DE LOS JEFES

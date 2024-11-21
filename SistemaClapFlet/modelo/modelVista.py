@@ -214,7 +214,7 @@ class sliderBase(UserControl):
         self.textoSlider.value = f"{nombre}"
         self.update()
 
-    def contruirPrincipal(self, contenedorInicio, appbar, contenedorReporte, funcionReporte, iDLiderCalle, contenedorHistorial, funcionHistorial, contenedorPerfilLider, funcionPerfil):
+    def contruirPrincipal(self, contenedorInicio, appbar, contenedorReporte, funcionReporte, iDLiderCalle, contenedorHistorial, funcionHistorial, contenedorPerfilLider, funcionPerfil, instancia):
         self.columna.controls = [
                             Container(
                                         padding=padding.only(top=25),
@@ -261,7 +261,7 @@ class sliderBase(UserControl):
                                         margin=margin.only(top=20),
                                         padding=padding.only(left=35),
                                         data=0,
-                                        on_click=lambda e: [rutas.animar(self.formulario, contenedorHistorial, contenedorHistorial, self.page), mensaje.cambiarPagina(self.indicador, 8.2), funcionHistorial(self.page), appbar.cambiarTitulo("Historial de jornadas")],
+                                        on_click=lambda e: [rutas.animar(self.formulario, contenedorHistorial, contenedorHistorial, self.page), mensaje.cambiarPagina(self.indicador, 8.2), funcionHistorial(instancia), appbar.cambiarTitulo("Historial de jornadas")],
                                         content=Row(
                                             controls=[
                                                 Icon(name=icons.EVENT_NOTE),

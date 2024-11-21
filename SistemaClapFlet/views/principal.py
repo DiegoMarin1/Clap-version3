@@ -9,12 +9,7 @@ from modelo.consultas import consulta
 
 from controlador.editarDatos import editarDatosUsuario
 from controlador.crudCilindros import crudCilindros
-
-import os
-import pathlib
-import shutil
-
-import modelo.reporte
+from controlador.historial import historial
 
 from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas
@@ -184,6 +179,7 @@ class principal:
         self.editCorreoJefe = editarDatosUsuario(page, self.correoJ, self.textoSlider, editarDatosJefeFamilia.cargarDatosJefe)
 
         self.crud = crudCilindros(page, self.tablaCilindros, self.tablaPedido)
+        self.gestionarArchivos = historial(page, self.tablaLlenarHistorial, self.tablaSeleccionarHistorial)
 
         #APP BAR
         self.appbar = appBar(page, self.indicator, self.logo)
@@ -623,7 +619,7 @@ class principal:
 
         #SLIDER
         self.slider = sliderBase(page, self.indicator, self.formulario)
-        self.slider.contruirPrincipal(self.contenedorInicio, self.appbar, self.contenedorReporte, reporteJornada.volverGenerarJornada, self.iDLiderCalle, self.contenedorHistorial, archivoPdf.volverGenerarArchivos, self.contenedorPerfilLider, editarDatosLiderCalle.cargarDatosLider)
+        self.slider.contruirPrincipal(self.contenedorInicio, self.appbar, self.contenedorReporte, reporteJornada.volverGenerarJornada, self.iDLiderCalle, self.contenedorHistorial, archivoPdf.volverGenerarArchivo, self.contenedorPerfilLider, editarDatosLiderCalle.cargarDatosLider, self.gestionarArchivos)
         self.slider.cambiarNombreSlider(self.nombreLiderCalle)
 
         #self.gestionar = gestorAcciones(page, self.idUsuario, self.tablaPedido, self.tablaCilindros, self.columnaCards, self.tituloAgregarJefes)

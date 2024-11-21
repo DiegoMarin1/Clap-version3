@@ -2,17 +2,13 @@ from flet import ScrollMode, Container, Text, SnackBar, Dropdown, dropdown, alig
 from controlador.conexion import db
 from controlador.rutas import rutas
 from controlador.mensajes import mensaje, validaciones
-from modelo.modelPrincipal import lider, jefeFamiliar
-from modelo.consultas import consulta
-from modelo.modelVista import seccionesEditar, seccionesEditarCompleja
-
-import modelo.reporte
-from modelo.reporte import *
 from modelo.modelPrincipal import lider
+from modelo.consultas import consulta
 
-import os
-import pathlib
-import shutil
+
+from modelo.reporte import *
+
+
 
 from datetime import datetime
 from time import sleep
@@ -281,118 +277,6 @@ class preciosCilindros:
             page.snack_bar = SnackBar(content=Text("Precios Actualizados Correctamente"), bgcolor="GREEN")
             page.snack_bar.open = True
             page.update()
-
-#PARA VER EL HISTORIAL DE JORNADAS QUE A REALIZADO UN USUARIO LIDER DE CALLE
-class historial:
-    #CARGAR LOS DATOS DE LAS JORNADAS
-    def abrirHistorial(page, fechaa, idss):
-        gestionPrincipal.tablaLlenarHistorial.rows.clear()
-        gestionPrincipal.tablaLlenarHistorial.rows = historial.llenarHistroial(page, idss)
-
-        alertHistorial = AlertDialog(
-            modal=True,
-            content=Column(
-                controls=[
-                    Text(f"Jornada realizada el {fechaa}"),
-                    Container(
-                        bgcolor="white",
-                        height=550,
-                        border_radius=border_radius.all(7),  
-                        content=Column(
-                            expand=True,
-                            height=550,
-                            scroll=ScrollMode.ALWAYS,
-                            controls=[
-                                gestionPrincipal.tablaLlenarHistorial,
-                            ]
-                        )
-                    ),
-                ]
-            ),
-            actions=[ElevatedButton("Descargar Pdf", on_click=lambda _:archivos.descargarArchivo(page, alertHistorial, idss)), ElevatedButton("Regresar", on_click=lambda _:mensaje.cerrarAlert(page, alertHistorial))]
-        )
-
-        page.dialog = alertHistorial
-        alertHistorial.open = True
-
-        page.update()
-
-    #EXTRAER DE DATOS EL CONTENEDOR DEL HISTORIAL
-    def llenarHistroial(page, ids):
-        resultado = db.consultaConRetorno(consulta.obtenerHistorial, [ids,])
-
-        for idss, cii, nom, ape, empresa, tamano, pico , fecha in resultado:
-            gestionPrincipal.contenido.append(DataRow(
-                color="WHITE",
-                cells=[
-                    DataCell(Text(f"{cii}")),
-                    DataCell(Text(f"{nom}")),
-                    DataCell(Text(f"{ape}")),
-                    DataCell(Text(f"{empresa}")),
-                    DataCell(Text(f"{tamano}")),
-                    DataCell(Text(f"{pico}")),
-                    DataCell(Text(f"{fecha}")),
-                ],
-            ),
-            )
-
-            page.update()
-
-        return gestionPrincipal.contenido 
-
-#GESTIONAR EL GUARDADO DE ARCHIVOS
-class archivos:
-    def volverGenerarArchivos(page, query, parametro, tabla, funcion):
-        gestionPrincipal.bitacoraLista.clear()
-        tabla.rows.clear()
-        tabla.rows = archivos.generarArchivos(page, query, parametro, funcion)
-
-        page.update()
-
-    def generarArchivos(page, query, parametro, funcion):
-        coun = 1
-        resultadoId = db.consultaConRetorno(query, [parametro,])
-
-        for idss in resultadoId:
-
-            datos = db.consultaConRetorno(consulta.obtenerFechasJornadas, [idss[0],])
-
-            gestionPrincipal.bitacoraLista.append([datos[0][0], datos[0][1]])
-
-        for fecha, ids in gestionPrincipal.bitacoraLista:
-            gestionPrincipal.his.append(DataRow(
-                color="WHITE",
-                cells=[
-                    DataCell(Text(f"Jornada {coun}")),
-                    DataCell(Text(f"{fecha}")),
-                ],
-                on_select_changed=lambda _, fecha = fecha, ids = ids: [funcion(page, fecha, ids)]
-            ),
-            )
-            coun = coun + 1
-
-            page.update()
-
-        return gestionPrincipal.his
-
-    def descargarArchivo(page, alertt, ids):
-
-        origen = db.consultaConRetorno(consulta.origenRutaArchivo, [ids,])
-        destino = os.path.join(os.path.join(os.environ['USERPROFILE']), rf'Desktop\Reportes')
-
-        rutaEscritorio = os.path.join(os.path.join(os.environ['USERPROFILE']), rf'Desktop\Reportes')
-
-        if os.path.exists(rutaEscritorio) == True:
-            pass
-        else:
-            os.mkdir(rutaEscritorio)
-
-        shutil.copy(origen[0][0], destino)
-
-        mensaje.cerrarAlert(page, alertt)
-        page.snack_bar = SnackBar(content=Text("El PDF se descargo correctamente, puede visualizarlo en la caperta Reportes ubicada en el escritorio"), bgcolor="GREEN")
-        page.snack_bar.open = True
-        page.update()
 
 class datosUsuario:
     def volverCargarTusDatos(page):

@@ -1,24 +1,18 @@
 from flet import *
-from flet import InputFilter, TextOnlyInputFilter, NumbersOnlyInputFilter, View, Image, Icon, margin, Offset, ScrollMode, AnimatedSwitcher, DataTable, DataColumn, ListView, PopupMenuButton, PopupMenuItem, Stack, CircleAvatar, Checkbox, AnimatedSwitcherTransition, AnimationCurve, animation, transform, Container, Text, SnackBar, Dropdown, dropdown, alignment, border_radius, border, TextCapitalization, TextField, CrossAxisAlignment, MainAxisAlignment, Column, FontWeight, TextButton, AlertDialog, padding, TextThemeStyle, DataRow, DataCell, Row, icons, IconButton, ElevatedButton
+from flet import InputFilter, NumbersOnlyInputFilter, View, Image, ScrollMode, AnimatedSwitcher, DataTable, DataColumn, ListView, Checkbox, AnimatedSwitcherTransition, AnimationCurve, animation, transform, Container, Text, Dropdown, dropdown, alignment, border_radius, border, TextCapitalization, TextField, CrossAxisAlignment, MainAxisAlignment, Column, FontWeight, padding, Row, icons, IconButton, ElevatedButton
 from flet_route import Params, Basket
-from datetime import datetime
-from time import sleep
 
 #CONTROLADORES
 from controlador.newCaracteristicaCilindro import caracteristicasCilindro
 from controlador.editarDatos import editarDatosUsuario
+from controlador.historial import historial
 
-import os
-import pathlib
-import shutil
-
-import modelo.reporte
 from modelo.modelVista import appBar, sliderBase
 
 from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas
 from modelo.consultas import consulta
-from gestores.gestorLiderPolitico import bloqueoUsuario, revelarContrasena, gestionPrincipal, preciosCilindros, bitacora, archivos, datosUsuario, generarCartas, historial
+from gestores.gestorLiderPolitico import bloqueoUsuario, revelarContrasena, gestionPrincipal, preciosCilindros, bitacora, datosUsuario, generarCartas
 
 class liderPolitico:
     def __init__(self):       
@@ -127,6 +121,8 @@ class liderPolitico:
         self.editApellido = editarDatosUsuario(page, self.apellidoLi, self.textoSlider, datosUsuario.volverCargarTusDatos)
         self.editTelefono = editarDatosUsuario(page, self.telefonoLi, self.textoSlider, datosUsuario.volverCargarTusDatos)
         self.editCorreo = editarDatosUsuario(page, self.correoLi, self.textoSlider, datosUsuario.volverCargarTusDatos)
+
+        self.gestionArchivos = historial(page, self.tablaLlenarHistorial, self.tablaSeleccionarHistorial)
 
         #CONTENEDORES PRINCIPALES
         self.contenedorInicio = Container(
@@ -447,7 +443,7 @@ class liderPolitico:
                                             spacing=20,
                                             controls=[
                                                 ElevatedButton("Regresar", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), self.appbar.cambiarTitulo("Lideres de Calle"), revelarContrasena.regresarPassFalse(page, self.contrasena)]),
-                                                ElevatedButton("Ver Jornadas", bgcolor="Green", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorHistorial, self.contenedorHistorial, page), self.appbar.cambiarTitulo("Administrador de jornadas"), archivos.volverGenerarArchivos(page, consulta.obtenerArchivosId, self.cedula.value, self.tablaSeleccionarHistorial, historial.abrirHistorial)])
+                                                ElevatedButton("Ver Jornadas", bgcolor="Green", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorHistorial, self.contenedorHistorial, page), self.appbar.cambiarTitulo("Administrador de jornadas"), self.gestionArchivos.volverGenerarArchivos(consulta.obtenerArchivosId, self.cedula.value)])
                                             ]
                                         ),
                                         ElevatedButton("Ver bitacora", on_click=lambda _: [rutas.animar(self.formulario, self.formularioBitacora, self.formularioBitacora, page), self.appbar.cambiarTitulo("Historial de Inicios de sesion"), bitacora.volverGenerarBitacora(page, self.cedula)])
