@@ -10,10 +10,11 @@ from modelo.consultas import consulta
 from controlador.editarDatos import editarDatosUsuario
 from controlador.crudCilindros import crudCilindros
 from controlador.historial import historial
+from controlador.registrarJefesFamilia import registrarJefeFamiliaCilindros
 
 from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas
-from gestores.gestorPincipal import regresarAtras, reporteJornada, archivoPdf, editarDatosLiderCalle, editarDatosJefeFamilia, gestionPrincipal, cartasJefesFamilia, registrarJefeFamiliaCilindros, formularioJefeFamilia
+from gestores.gestorPincipal import regresarAtras, reporteJornada, archivoPdf, editarDatosLiderCalle, editarDatosJefeFamilia, gestionPrincipal, cartasJefesFamilia, formularioJefeFamilia
 
 class principal:
     def __init__(self):
@@ -68,7 +69,7 @@ class principal:
                 dropdown.Option("V"), dropdown.Option("E")])
         self.tipoCedula.value = "V"
         self.cedula = TextField(label=mensaje.cedula, hint_text=mensaje.minimoCaracteres(7), border_color="#820000", border_radius=20, width=180, height=60, max_length=8, input_filter=NumbersOnlyInputFilter(), on_change=lambda _: mensaje.quitarError(page, self.cedula))
-        self.cantidadCi = Dropdown(label=mensaje.cantidadCilindros, border_radius=30, border_color="#820000", width=300, height=60, value=0, on_change=lambda _: [self.generarCasillasCilindro(page), mensaje.quitarError(page, self.cantidadCi)], options=[
+        self.cantidadCi = Dropdown(label=mensaje.cantidadCilindros, border_radius=30, border_color="#820000", width=300, height=60, value=0, on_change=lambda _: [self.generarCasillasCilindro(), mensaje.quitarError(page, self.cantidadCi)], options=[
                 dropdown.Option("1"), dropdown.Option("2"), dropdown.Option("3"),
                 dropdown.Option("4"), dropdown.Option("5"), dropdown.Option("6"),
                 dropdown.Option("7"), dropdown.Option("8"), dropdown.Option("9"),
@@ -622,7 +623,7 @@ class principal:
         self.slider.contruirPrincipal(self.contenedorInicio, self.appbar, self.contenedorReporte, reporteJornada.volverGenerarJornada, self.iDLiderCalle, self.contenedorHistorial, archivoPdf.volverGenerarArchivo, self.contenedorPerfilLider, editarDatosLiderCalle.cargarDatosLider, self.gestionarArchivos)
         self.slider.cambiarNombreSlider(self.nombreLiderCalle)
 
-        #self.gestionar = gestorAcciones(page, self.idUsuario, self.tablaPedido, self.tablaCilindros, self.columnaCards, self.tituloAgregarJefes)
+        self.gestorRegistroJefeFamiliar = registrarJefeFamiliaCilindros(page, self.appbar, self.formulario, self.formularioCilindro, self.tablaPedido, self.tablaCilindros, self.columnaContenedor)
 
         self.pasarWidget()
         self.iniciarGenerarCartas(page)
@@ -671,11 +672,11 @@ class principal:
 
     def accionBtnFormularioJefeFamilia(self, pagee):
         pagee = pagee
-        registrarJefeFamiliaCilindros.validarFormularioJefesFamilia(pagee, self.nombre, self.apellido, self.cedula, self.tipoCedula, self.numeroTelefono, self.correo, self.tipoCorreo, self.codigoTelefono, self.cantidadCi)
+        self.gestorRegistroJefeFamiliar.validarFormularioJefesFamilia(self.nombre, self.apellido, self.cedula, self.tipoCedula, self.numeroTelefono, self.correo, self.tipoCorreo, self.codigoTelefono, self.cantidadCi)
     
     def accionBtnFormularioCilindros(self, pagee):
         pagee = pagee
-        registrarJefeFamiliaCilindros.abrirAlertConfirmarCilindros(pagee,  self.nombre, self.apellido, self.cedula, self.tipoCedula, self.correo, self.tipoCorreo, self.numeroTelefono, self.codigoTelefono, self.cantidadCi, self.iDLiderCalle, self.tablaPedido, self.tablaCilindros)
+        self.gestorRegistroJefeFamiliar.abrirAlertConfirmarCilindros(self.nombre, self.apellido, self.cedula, self.tipoCedula, self.correo, self.tipoCorreo, self.numeroTelefono, self.codigoTelefono, self.cantidadCi, self.iDLiderCalle)
 
     def accionBtnFromularioCilindroAnadir(self, pagee):
         pagee = pagee
@@ -685,6 +686,5 @@ class principal:
         pagee = pagee
         editarDatosJefeFamilia.cargarDatosJefe(pagee)
 
-    def generarCasillasCilindro(self, pagee):
-        pagee = pagee
-        registrarJefeFamiliaCilindros.volverGenerarCilindros(pagee, self.columnaContenedor, self.cantidadCi)
+    def generarCasillasCilindro(self):
+        self.gestorRegistroJefeFamiliar.volverGenerarCilindros(self.cantidadCi)

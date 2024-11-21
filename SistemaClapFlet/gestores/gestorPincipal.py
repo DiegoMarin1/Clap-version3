@@ -1,20 +1,13 @@
-from flet import ScrollMode, Container, Text, SnackBar, Dropdown, dropdown, alignment, border_radius, border, TextCapitalization, TextField, CrossAxisAlignment, MainAxisAlignment, Column, FontWeight, TextButton, AlertDialog, padding, TextThemeStyle, DataRow, DataCell, Row, icons, IconButton, ElevatedButton
+from flet import  Container, Text, SnackBar, Dropdown, dropdown, border_radius, border, CrossAxisAlignment, Column, FontWeight, TextButton, AlertDialog, DataRow, DataCell, Row, icons, IconButton
 from controlador.conexion import db
 from controlador.rutas import rutas
 from controlador.mensajes import mensaje, validaciones
-from controlador.historial import historial
 from modelo.modelPrincipal import jefeFamiliar, lider, cilindro
 from modelo.consultas import consulta
-from modelo.modelVista import seccionesEditar, seccionesEditarCompleja
 from controlador.cartas import cartas
 #from controlador.crudCilindros import crudCilindros
 
-import modelo.reporte
 from modelo.reporte import Pdf
-
-import os
-import pathlib
-import shutil
 
 from datetime import datetime
 from time import sleep
@@ -250,151 +243,6 @@ class formularioJefeFamilia:
 
     def diriguirAnadirCilindro():
         gestionPrincipal.crud.abrirAnadirCilindro(cedulaIdentidad)
-
-#FORMULARIO DE JEFES DE FAMILIA Y CILINDROS
-class registrarJefeFamiliaCilindros:
-    def validarFormularioJefesFamilia(page, nombre, apellido, cedula, tipoCedula, numeroTelefono, correo, tipoCorreo, codigoTelefono, cantidadCi):
-        arregloCedula = f"{tipoCedula.value}-{cedula.value}"
-        arregloCorreo = f"{correo.value}{tipoCorreo.value}"
-        arregloTelefono = f"{codigoTelefono.value}-{numeroTelefono.value}"
-
-        listaCondicion = {
-            "nombre" : {"min": 3},
-            "apellido" : {"min": 4},
-            "cedula" : {"min":7, "query":consulta.verificarCedulaJefesFamilia, "param":[arregloCedula,], "msj":f"Esta cedula ya esta registrada"},
-            "numeroTelefono" : {"min":7, "query":consulta.verificarTelefonoJefesFamilia, "param":[arregloTelefono,], "msj":"Este numero de telefono ya esta asignado a un usuario"},
-            "correo" : {"min":3, "query":consulta.verificarCorreoJefesFamilia, "param":[arregloCorreo,], "msj":mensaje.correoRegistrado},
-            "tipoCorreo" : {"min":4},
-            "codigoTelefono" : {"min":4},
-            "cantidadCi": {"min":1}
-        }
-
-        todoValido = True
-
-        for nombreCampo, config in listaCondicion.items():
-            if not (eval(nombreCampo).value) or (len(eval(nombreCampo).value) < config["min"]):
-                validaciones.validarCampos(page, eval(nombreCampo), config["min"])
-                todoValido = False
-            if "query" in config:
-                if bool(validaciones.validarConsultas(page, config["query"], config["param"], config["msj"]) == False):
-                    todoValido = False
-
-        if cantidadCi.value == 0:
-                cantidadCi.error_text = "Campo vacio, por favor seleccione para continuar"
-                page.update()
-
-        if todoValido:
-            gestionPrincipal.appbar.cambiarTitulo(f"Datos de Cilindros de {nombre.value} {apellido.value}")
-            rutas.animar(gestionPrincipal.formulario, gestionPrincipal.formularioCilindro, gestionPrincipal.formularioCilindro, page)
-
-    #GENERAR EL FORMULARIO DE CILINDROS
-    def volverGenerarCilindros(page, widget, cantidadCi):
-        widget.controls = registrarJefeFamiliaCilindros.itemsCilindros(page, int(cantidadCi.value))
-        page.update()
-
-    def itemsCilindros(page, cantidadCi):
-        cantidadCi = cantidadCi + 1
-        gestionPrincipal.datosCilindrosLista.clear()
-        gestionPrincipal.itemsCilindrosLista.clear()
-
-        for formularioIndividual in range(1, cantidadCi):
-
-            empresa = Dropdown(hint_text="Seleccionar empresa", height=60, width=130)
-            tamano = Dropdown(hint_text="Seleccionar tamaño", height=60, width=130)
-            pico = Dropdown(hint_text="Seleccionar pico", height=60, width=130)
-            
-            for emp in db.consultaConRetorno(consulta.obtenerEmpresas):
-                empresa.options.append(dropdown.Option(emp[0]))
-
-            
-            for tam in db.consultaConRetorno(consulta.obtenerTamanos):
-                tamano.options.append(dropdown.Option(tam[0]))
-
-
-            for pic in db.consultaConRetorno(consulta.obtenerPicos):
-                pico.options.append(dropdown.Option(pic[0]))
-
-            empresa.value = "Radelco"
-            tamano.value = "Pequeña"
-            pico.value = "Presion"
-
-            gestionPrincipal.itemsCilindrosLista.append(
-                Container(
-                    height=250,
-                    border_radius=border_radius.all(15),
-                    width=150,
-                    bgcolor="WHITE",
-                    border=border.all(2, "#C5283D"),
-                    content=Column(
-                        horizontal_alignment=CrossAxisAlignment.CENTER,
-                        spacing=0,
-                        controls=[
-                            Text(f"Cilindro {str(formularioIndividual)}", weight=FontWeight.W_500,),
-                            Text("Empresa:", size=10, weight=FontWeight.W_900),
-                            empresa,
-                            Text("Tamaño:", size=10, weight=FontWeight.W_900),
-                            tamano,
-                            Text("Pico:", size=10, weight=FontWeight.W_900),
-                            pico
-                        ]
-                    )
-                )
-            )
-
-            gestionPrincipal.datosCilindrosLista.append([empresa, tamano, pico])
-
-            page.update()
-        
-        return gestionPrincipal.itemsCilindrosLista
-
-    def abrirAlertConfirmarCilindros(page, nombre, apellido, cedula, tipoCedula, correo, tipoCorreo, numeroTelefono, codigoTelefono, cantidadCi, iDLiderCalle, tablaPedido, tablaCilindros):
-        textoConfirmar = Text(f"Estas seguro que desea registrar al jefe de familia {nombre.value} {apellido.value}?")
-        nuevoJefe = jefeFamiliar(f"{tipoCedula.value}-{cedula.value}", nombre.value, apellido.value, f"{codigoTelefono.value}-{numeroTelefono.value}", f"{correo.value}{tipoCorreo.value}", True, iDLiderCalle, 1)
-        alertConfirmarCilindros = AlertDialog(content=textoConfirmar,
-            actions=[TextButton("Confirmar", on_click=lambda _:[registrarJefeFamiliaCilindros.guardarJefe(page, alertConfirmarCilindros, nuevoJefe, cantidadCi, textoConfirmar, tablaPedido, tablaCilindros)]), 
-            TextButton("Cancelar", on_click=lambda _:[mensaje.cerrarAlert(page, alertConfirmarCilindros)])]
-        )
-
-        page.dialog = alertConfirmarCilindros
-        alertConfirmarCilindros.open = True
-        nuevoJefe.telefono
-        page.update()
-
-    def guardarJefe(page, alert, nuevoJefe, cantidadCi, textoConfirmar, tablaPedido, tablaCilindros):
-        alert.actions.clear()
-        textoConfirmar.value = "Guardando datos, por favor espere"
-        page.update()
-
-        #INSERTAR LOS DATOS DEL LIDER DE FAMILIA
-        db.consultaSinRetorno(consulta.guardarJefeFamilia, [nuevoJefe.cedula, nuevoJefe.nombre, nuevoJefe.apellido, nuevoJefe.telefono, nuevoJefe.correo, nuevoJefe.get_liderId()])
-
-        #OBTENER EL ID DEL LIDER DE FAMILIA
-        idJefeFamiliar = db.consultaConRetorno(consulta.obtenerIdJefeFamilia, [nuevoJefe.cedula,])
-
-        #CICLO PARA OBTENER LOS IDS
-        for empresa, tamano, pico in gestionPrincipal.datosCilindrosLista:
-            resultadoIdEmpresa = db.consultaConRetorno(consulta.obtenerIdEmpresa, [empresa.value,])
-            resultadoIdEmpresa = resultadoIdEmpresa[0][0]
-
-            resultadoIdTamano = db.consultaConRetorno(consulta.obtenerIdTamano, [tamano.value,])
-            resultadoIdTamano = resultadoIdTamano[0][0]
-
-            resultadoIdPico = db.consultaConRetorno(consulta.obtenerIdPico, [pico.value,])
-            resultadoIdPico = resultadoIdPico[0][0]
-
-            gestionPrincipal.listaId.append([resultadoIdEmpresa, resultadoIdPico, resultadoIdTamano])
-
-        #GUARDAMOS LOS CILINDROS EN LA BASE DE DATOS
-        for empresaId, picoId, tamanoId in gestionPrincipal.listaId:
-            fecha = datetime.today().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-            fecha = str(fecha)
-
-            db.consultaSinRetorno(consulta.guardarCilindros, [str(empresaId), str(picoId), str(tamanoId), idJefeFamiliar[0][0], str(fecha)])
-            sleep(0.1)
-
-        mensaje.cerrarAlert(page, alert)
-        gestionPrincipal.appbar.cambiarTitulo("Lideres de Calle")
-        regresarAtras.regresarAlInicioCompletado(page, cantidadCi, empresa, pico, tamano, nuevoJefe.get_liderId(), tablaPedido, tablaCilindros)
 
 class reporteJornada:
     #LIMPIAR EL CONTENEDOR DE LAS JORNADAS
