@@ -5,8 +5,10 @@ from flet_route import Params, Basket
 from datetime import datetime
 from time import sleep
 from modelo.modelVista import appBar, sliderBase
+from modelo.consultas import consulta
 
 from controlador.editarDatos import editarDatosUsuario
+from controlador.crudCilindros import crudCilindros
 
 import os
 import pathlib
@@ -16,8 +18,7 @@ import modelo.reporte
 
 from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas
-from gestores.gestorPincipal import *
-from gestores.gestorPincipal import regresarAtras, reporteJornada, archivoPdf, editarDatosLiderCalle, editarDatosJefeFamilia, gestionPrincipal, cartasJefesFamilia, registrarJefeFamiliaCilindros, crudCilindros
+from gestores.gestorPincipal import regresarAtras, reporteJornada, archivoPdf, editarDatosLiderCalle, editarDatosJefeFamilia, gestionPrincipal, cartasJefesFamilia, registrarJefeFamiliaCilindros, formularioJefeFamilia
 
 class principal:
     def __init__(self):
@@ -181,6 +182,8 @@ class principal:
         self.editApellidoJefe = editarDatosUsuario(page, self.apellidoJ, self.textoSlider, editarDatosJefeFamilia.cargarDatosJefe)
         self.editTelefonoJefe = editarDatosUsuario(page, self.telefonoJ, self.textoSlider, editarDatosJefeFamilia.cargarDatosJefe)
         self.editCorreoJefe = editarDatosUsuario(page, self.correoJ, self.textoSlider, editarDatosJefeFamilia.cargarDatosJefe)
+
+        self.crud = crudCilindros(page, self.tablaCilindros, self.tablaPedido)
 
         #APP BAR
         self.appbar = appBar(page, self.indicator, self.logo)
@@ -575,7 +578,7 @@ class principal:
                                 vertical_alignment=MainAxisAlignment.CENTER,
                                 controls=[
                                     ElevatedButton("Ver informacion", on_click=lambda _: self.accionBtnFormularioJefeFamiliaVerInfo(page)),
-                                    ElevatedButton("Anadir Cilindro", bgcolor="GREEN", color="#ffffff", on_click=lambda _: self.accionBtnFromularioCilindroAnadir(page))
+                                    ElevatedButton("Anadir Cilindro", bgcolor="GREEN", color="#ffffff", on_click=lambda _: formularioJefeFamilia.diriguirAnadirCilindro())
                                 ]
                             ),
                         ]
@@ -656,7 +659,7 @@ class principal:
         self.titulo, self.contenedorInicio, self.contenedorReporte, self.contenedorHistorial, self.contenedorPerfilJefe, 
         self.contenedorPerfilLider, self.formularioJefe, self.formularioCilindro, self.contenedorJefeFamilia, self.tablaJornadaPrincipal,
         self.nombreLi, self.apellidoLi, self.cedulaLi, self.ubicacionLi, self.telefonoLi, self.correoLi, self.textoSlider, 
-        self.tablaLlenarHistorial, self.tablaSeleccionarHistorial, self.appbar)
+        self.tablaLlenarHistorial, self.tablaSeleccionarHistorial, self.appbar, self.crud)
 
     def iniciarGenerarCartas(self, pagee):
         pagee = pagee
@@ -680,7 +683,7 @@ class principal:
 
     def accionBtnFromularioCilindroAnadir(self, pagee):
         pagee = pagee
-        crudCilindros.abrirAnadirCilindro(pagee, self.tablaCilindros, self.tablaPedido)
+        self.crud.abrirAnadirCilindro(pagee, self.tablaCilindros, self.tablaPedido)
 
     def accionBtnFormularioJefeFamiliaVerInfo(self, pagee):
         pagee = pagee

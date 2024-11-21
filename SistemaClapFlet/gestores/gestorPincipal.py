@@ -7,6 +7,7 @@ from modelo.modelPrincipal import jefeFamiliar, lider, cilindro
 from modelo.consultas import consulta
 from modelo.modelVista import seccionesEditar, seccionesEditarCompleja
 from controlador.cartas import cartas
+#from controlador.crudCilindros import crudCilindros
 
 import modelo.reporte
 from modelo.reporte import Pdf
@@ -95,11 +96,12 @@ class gestionPrincipal:
     textoSlider = None
 
     appbar = None
+    crud = None
 
     def obtenerWidget(formulario, nombre, apellido, cedula, ubicacion, telefono, correo, columnaCards, tituloAgregarJefes, tituloCilindroSeleccionado, 
     tituloCilindroPropietario, titulo, contenedorInicio, contenedorReporte, contenedorHistorial, contenedorPerfilJefe, contenedorPerfilLider, 
     formularioJefe, formularioCilindro, contenedorJefeFamilia, tablaJornadaPrincipal, nombreLi, apellidoLi, cedulaLi, ubicacionLi, telefonoLi, 
-    correoLi, textoSlider, tablaLlenarHistorial, tablaSeleccionarHistorial, appbar):
+    correoLi, textoSlider, tablaLlenarHistorial, tablaSeleccionarHistorial, appbar, crud):
         gestionPrincipal.formulario = formulario
 
         gestionPrincipal.nombreJ = nombre
@@ -138,6 +140,7 @@ class gestionPrincipal:
         gestionPrincipal.tablaLlenarHistorial = tablaLlenarHistorial
         gestionPrincipal.tablaSeleccionarHistorial = tablaSeleccionarHistorial
         gestionPrincipal.appbar = appbar
+        gestionPrincipal.crud = crud
 
 #GENERAR CARTAS DE JEFES DE FAMILIA Y VER SU CONTENIDO
 class cartasJefesFamilia:
@@ -208,7 +211,7 @@ class formularioJefeFamilia:
                     DataCell(Text(f"{tamano}")),
                     DataCell(Text(f"{pico}")),
                     DataCell(Text(f"{fecaRegistrada[:-13]}")),
-                    DataCell(Row(controls=[IconButton(icon=icons.EDIT, tooltip="Editar Cilindro", on_click=lambda _, idss=idss: crudCilindros.abrirEditarCilindro(page, idss, nombre, tablaCilindros, tablaPedido)), IconButton(icon=icons.DELETE, tooltip="Eliminar Cilindro", on_click=lambda _, idss=idss: crudCilindros.abrirEliminarCilindro(page, idss, nombre, tablaCilindros, tablaPedido))]))
+                    DataCell(Row(controls=[IconButton(icon=icons.EDIT, tooltip="Editar Cilindro", on_click=lambda _, idss=idss: gestionPrincipal.crud.abrirEditarCilindro(idss, nombre, cedulaIdentidad)), IconButton(icon=icons.DELETE, tooltip="Eliminar Cilindro", on_click=lambda _, idss=idss: gestionPrincipal.crud.abrirEliminarCilindro(idss, nombre, cedulaIdentidad))]))
                 ],
                 on_select_changed=lambda _, idss=idss: formularioJefeFamilia.seleccionarJornada(idss, idJefeFamilia, page, nombre, tablaCilindros, tablaPedido),
             ),
@@ -227,11 +230,10 @@ class formularioJefeFamilia:
                     DataCell(Text(f"{empr}")),
                     DataCell(Text(f"{tamn}")),
                     DataCell(Text(f"{pic}")),
-                    DataCell(Row(controls=[IconButton(icon=icons.CANCEL, tooltip="Quitar", on_click=lambda _, idPedido=idPedido: crudCilindros.eliminarJornadaJefe(idPedido, page, nombre, tablaCilindros, tablaPedido))]))
+                    DataCell(Row(controls=[IconButton(icon=icons.CANCEL, tooltip="Quitar", on_click=lambda _, idPedido=idPedido: gestionPrincipal.crud.eliminarJornadaJefe(idPedido, nombre, cedulaIdentidad))]))
                 ],
             ),
             )
-
             page.update()
 
         return gestionPrincipal.listPedido
@@ -245,6 +247,9 @@ class formularioJefeFamilia:
         page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El cilindro fue seleccionado"))
         page.snack_bar.open = True
         page.update()
+
+    def diriguirAnadirCilindro():
+        gestionPrincipal.crud.abrirAnadirCilindro(cedulaIdentidad)
 
 #FORMULARIO DE JEFES DE FAMILIA Y CILINDROS
 class registrarJefeFamiliaCilindros:
@@ -390,190 +395,6 @@ class registrarJefeFamiliaCilindros:
         mensaje.cerrarAlert(page, alert)
         gestionPrincipal.appbar.cambiarTitulo("Lideres de Calle")
         regresarAtras.regresarAlInicioCompletado(page, cantidadCi, empresa, pico, tamano, nuevoJefe.get_liderId(), tablaPedido, tablaCilindros)
-
-class crudCilindros:
-    #ACCION PARA EJECUTAR EL CRUD
-    def abrirEliminarCilindro(page, idCilindro, nombre, tablaCilindros, tablaPedido):
-
-        alertEliminar = AlertDialog(modal=True, content=Text("Seguro que deseas eleminar el cilindro?"), actions=[TextButton("Si", on_click=lambda _: crudCilindros.EliminarCilindro(idCilindro, page, nombre, tablaCilindros, tablaPedido, alertEliminar)), TextButton("No", on_click=lambda _:mensaje.cerrarAlert(page, alertEliminar))])
-
-        page.dialog = alertEliminar
-        alertEliminar.open = True
-
-        page.update()
-
-    def abrirAnadirCilindro(page, tablaCilindros, tablaPedido):
-        empresaAnadir = Dropdown(hint_text="Seleccionar empresa", height=60, width=240, on_change=lambda _: mensaje.quitarError(page, empresaAnadir))
-        tamanoAnadir = Dropdown(hint_text="Seleccionar tamaño", height=60, width=240, on_change=lambda _: mensaje.quitarError(page, tamanoAnadir))
-        picoAnadir = Dropdown(hint_text="Seleccionar pico", height=60, width=240, on_change=lambda _: mensaje.quitarError(page, picoAnadir))
-
-        for emp in db.consultaConRetorno(consulta.obtenerEmpresas):
-            empresaAnadir.options.append(dropdown.Option(emp[0]))
-            
-        for tam in db.consultaConRetorno(consulta.obtenerTamanos):
-            tamanoAnadir.options.append(dropdown.Option(tam[0]))
-
-        for pic in db.consultaConRetorno(consulta.obtenerPicos):
-            picoAnadir.options.append(dropdown.Option(pic[0]))
-
-        alertAnadir = AlertDialog(
-            content=Container(
-                height=300,
-                width=150,
-                bgcolor="white",
-                content=Column(
-                    horizontal_alignment=CrossAxisAlignment.CENTER,
-                    alignment=MainAxisAlignment.SPACE_BETWEEN,
-                    spacing=10,
-                    controls=[
-                        empresaAnadir,
-                        tamanoAnadir,
-                        picoAnadir
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    controls=[
-                        ElevatedButton("Agregar", on_click=lambda _:crudCilindros.anadirCilindro(page, empresaAnadir, tamanoAnadir, picoAnadir, tablaCilindros, tablaPedido, alertAnadir)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertAnadir))
-                    ]
-                )
-            ]
-        )
-
-        page.dialog = alertAnadir
-        alertAnadir.open = True
-
-        page.update()
-
-    def abrirEditarCilindro(page, ids, nombre, tablaCilindros, tablaPedido):
-
-        empresaEdit = Dropdown(hint_text="Seleccionar empresa", height=60, width=240)
-        tamanoEdit = Dropdown(hint_text="Seleccionar tamaño", height=60, width=240)
-        picoEdit = Dropdown(hint_text="Seleccionar pico", height=60, width=240)
-
-        for emp in db.consultaConRetorno(consulta.obtenerEmpresas):
-            empresaEdit.options.append(dropdown.Option(emp[0]))
-            
-        for tam in db.consultaConRetorno(consulta.obtenerTamanos):
-            tamanoEdit.options.append(dropdown.Option(tam[0]))
-
-        for pic in db.consultaConRetorno(consulta.obtenerPicos):
-            picoEdit.options.append(dropdown.Option(pic[0]))
-
-        resultadoGeneral = db.consultaConRetorno(consulta.editarCilindro, [ids,])
-
-        empresaV = resultadoGeneral[0][0]
-        tamanoV = resultadoGeneral[0][1]
-        picoV = resultadoGeneral[0][2]
-
-        #SELECCIONAR EMPRESA
-        
-        empresaEdit.value = empresaV
-        
-
-        #SELECCIONAR TAMANO
-        
-        tamanoEdit.value = tamanoV
-        
-
-        #SELECCIONAR PICO
-        
-        picoEdit.value = picoV
-        page.update()
-
-        alertEditar = AlertDialog(
-            content=Container(
-                height=250,
-                width=150,
-                bgcolor="white",
-                content=Column(
-                    spacing=10,
-                    controls=[
-                        empresaEdit,
-                        tamanoEdit,
-                        picoEdit
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    controls=[
-                        ElevatedButton("Guardar Cambios", on_click=lambda _:crudCilindros.editarCilindro(page, empresaEdit, tamanoEdit, picoEdit, ids, nombre, tablaCilindros, tablaPedido, alertEditar)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditar))
-                    ]
-                )
-            ]
-        )
-
-        page.dialog = alertEditar
-        alertEditar.open = True
-
-        page.update()
-    
-    #FUNCIONES QUE SE ENCARGAN DEL CRUD
-    def EliminarCilindro(idCilindro, page, nombre, tablaCilindros, tablaPedido, alertEliminar):
-        db.consultaSinRetorno(consulta.eliminarCilindro, [idCilindro,])
-        mensaje.cerrarAlert(page, alertEliminar)
-        formularioJefeFamilia.generarJefe(cedulaIdentidad, page, nombre, tablaCilindros, tablaPedido)
-
-        page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El cilindro se elimino correctamente"))
-        page.snack_bar.open = True
-
-        page.update()
-
-    def anadirCilindro(page, empresa, tamano, pico, tablaCilindros, tablaPedido, alertAnadir):
-
-        if (empresa.value == None) or (tamano.value == None) or (pico.value == None):
-            
-            for control in (empresa, tamano, pico):
-                if not control.value:
-                    control.error_text = mensaje.campoFaltante
-                    page.update()
-            
-            else:
-                return
-
-        else:
-            resultadoIdEmpresa = db.consultaConRetorno(consulta.obtenerIdEmpresa, [empresa.value,])
-            resultadoIdTamano = db.consultaConRetorno(consulta.obtenerIdTamano, [tamano.value,])
-            resultadoIdPico = db.consultaConRetorno(consulta.obtenerIdPico, [pico.value,])
-
-            fecha = datetime.today().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-
-            db.consultaSinRetorno(consulta.guardarCilindros, [resultadoIdEmpresa[0][0], resultadoIdPico[0][0], resultadoIdTamano[0][0], cedulaIdentidad, fecha])
-            mensaje.cerrarAlert(page, alertAnadir)
-
-            nombre = db.consultaConRetorno(consulta.mostrarDatosJefe, [cedulaIdentidad,])
-
-            formularioJefeFamilia.generarJefe(cedulaIdentidad, page, nombre[0][0], tablaCilindros, tablaPedido)
-
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("Se agrego el cilindro correctamente"))
-            page.snack_bar.open = True
-
-            page.update()
-
-    def editarCilindro(page, emp, tamn, pic, idsss, nombree, tablaCilindros, tablaPedido, alertEditar):
-        resultadoIdEmpresa = db.consultaConRetorno(consulta.obtenerIdEmpresa, [emp.value,])
-        resultadoIdTamano = db.consultaConRetorno(consulta.obtenerIdTamano, [tamn.value,])
-        resultadoIdPico = db.consultaConRetorno(consulta.obtenerIdPico, [pic.value,])
-
-        db.consultaSinRetorno(consulta.guardarCambioCilindro, [resultadoIdEmpresa[0][0], resultadoIdPico[0][0], resultadoIdTamano[0][0], idsss])
-        mensaje.cerrarAlert(page, alertEditar)
-        formularioJefeFamilia.generarJefe(cedulaIdentidad, page, nombree, tablaCilindros, tablaPedido)
-
-        page.snack_bar = SnackBar(content=Text(f"se edito el cilindro n{idsss}"), bgcolor="#4CBD49")
-        page.snack_bar.open = True
-
-        page.update()
-
-    def eliminarJornadaJefe(idCilindro, page, nombre, tablaCilindros, tablaPedido):
-        db.consultaSinRetorno(consulta.eliminarCilindroJornadaJefe, [idCilindro,])
-
-        formularioJefeFamilia.generarJefe(cedulaIdentidad, page, nombre, tablaCilindros, tablaPedido)
-
-        page.update()
 
 class reporteJornada:
     #LIMPIAR EL CONTENEDOR DE LAS JORNADAS

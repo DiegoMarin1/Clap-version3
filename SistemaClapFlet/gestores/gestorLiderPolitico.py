@@ -208,61 +208,6 @@ class bloqueoUsuario:
 
         page.update()
 
-#PARA AGREGAR NUEVAS EMPRESAS O TIPOS DE PICOS A LOS CILINDROS
-class caracteristicasCilindro:
-    def nuevaCaracteristica(page, texto, caracteristica, metodoValidar, query, avisoDuplicado, mensajeExito):
-        alertNuevaCaracteristica = AlertDialog(
-            content=Container(
-                alignment=alignment.center,
-                height=150,
-                width=300,
-                bgcolor="white",
-                content=Column(
-                    horizontal_alignment=CrossAxisAlignment.CENTER,
-                    spacing=10,
-                    controls=[
-                        Text(texto),
-                        caracteristica,
-                    ]
-                )
-            ),
-            actions=[
-                Row(
-                    alignment=MainAxisAlignment.CENTER,
-                    controls=[
-                        ElevatedButton("Guardar", on_click=lambda _:metodoValidar(page, alertNuevaCaracteristica, caracteristica, query, avisoDuplicado, mensajeExito)),
-                        ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertNuevaCaracteristica))
-                    ]
-                )
-            ]
-        )
-
-        page.dialog = alertNuevaCaracteristica
-        alertNuevaCaracteristica.open = True
-
-        page.update()
-
-    def ValidarNuevaCaracteristica(page, alertNuevaEmpresa, caracteristica, query, avisoDuplicado, mensajeExito):
-
-        if (caracteristica.value == "") or (len(caracteristica.value) in range(1, 3)):
-            if caracteristica.value == "":
-                caracteristica.error_text = mensaje.campoFaltante
-                page.update()
-            if len(caracteristica.value) in range(1, 3):
-                caracteristica.error_text = mensaje.minimoCaracteres(3)
-                page.update()
-        elif db.consultaConRetorno(query, [caracteristica.value,]):
-            page.snack_bar = SnackBar(content=Text(avisoDuplicado))
-            page.snack_bar.open = True
-            page.update()
-        else:
-            db.consultaSinRetorno(consulta.guardarEmpresaNueva, [caracteristica.value,])
-            mensaje.cerrarAlert(page, alertNuevaEmpresa)
-            caracteristica.value = ""
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text(mensajeExito))
-            page.snack_bar.open = True
-            page.update()
-
 class bitacora:
     def volverGenerarBitacora(page, ci):
         resultadoBitacora = db.consultaConRetorno(consulta.extraerBitacora, [ci.value,])
@@ -448,7 +393,6 @@ class archivos:
         page.snack_bar = SnackBar(content=Text("El PDF se descargo correctamente, puede visualizarlo en la caperta Reportes ubicada en el escritorio"), bgcolor="GREEN")
         page.snack_bar.open = True
         page.update()
-
 
 class datosUsuario:
     def volverCargarTusDatos(page):
