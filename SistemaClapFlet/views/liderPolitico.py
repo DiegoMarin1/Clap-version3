@@ -186,7 +186,7 @@ class liderPolitico:
                                             controls=[
                                                 Text("Nombre:"),
                                                 self.nombreLi,
-                                                IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: self.editNombre.editNombre())
+                                                IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: self.editNombre.editNombre(consulta.actualizarNombreLider, self.iDLiderCalle))
                                             ]
                                         ),
                                         Row(
@@ -195,7 +195,7 @@ class liderPolitico:
                                             controls=[
                                                 Text("Apellido:"),
                                                 self.apellidoLi,
-                                                IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: self.editApellido.editApellido())
+                                                IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: self.editApellido.editApellido(consulta.actualizarApellidoLider, self.iDLiderCalle))
                                             ]
                                         ),
                                         Row(
@@ -212,7 +212,7 @@ class liderPolitico:
                                             controls=[
                                                 Text("Telefono:"),
                                                 self.telefonoLi,
-                                                IconButton(icon=icons.EDIT, tooltip="Editar Telefono", on_click=lambda _: self.editTelefono.editTelefono())
+                                                IconButton(icon=icons.EDIT, tooltip="Editar Telefono", on_click=lambda _: self.editTelefono.editTelefono(consulta.verificarTelefonoLider, consulta.actualizarTelefonoLider, self.iDLiderCalle))
                                             ]
                                         ),
                                         Row(
@@ -221,7 +221,7 @@ class liderPolitico:
                                             controls=[
                                                 Text("Correo:"),
                                                 self.correoLi,
-                                                IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: self.editCorreo.editCorreo())
+                                                IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: self.editCorreo.editCorreo(consulta.verificarCorreoLider, consulta.actualizarCorreoLider, self.iDLiderCalle))
                                             ]
                                         ),
                                         Row(

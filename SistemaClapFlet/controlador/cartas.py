@@ -20,7 +20,7 @@ class cartas:
                     width=250,
                     padding=padding.all(7),
                     border_radius=border_radius.all(20),
-                    on_click=lambda _, ids=ids, nom=nom: self.funcion(ids, self.page, nom, self.tablaCilindros, self.tablaPedido), 
+                    on_click=lambda _, ids=ids, nom=nom: [self.funcion(ids, self.page, nom, self.tablaCilindros, self.tablaPedido), self.set_id(ids)], 
                     content=Column(
                         controls=[
                             Text(f"{nom} {ape}", style=TextThemeStyle.TITLE_LARGE, color="WHITE"),
@@ -31,3 +31,9 @@ class cartas:
             )
             self.page.update()
         return self.lista
+    
+    def set_id(self, ids):
+        self.ids = ids
+
+    def get_id(self):
+        return self.ids

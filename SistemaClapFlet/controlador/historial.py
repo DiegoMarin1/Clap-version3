@@ -1,4 +1,4 @@
-from flet import *
+"""from flet import *
 
 class historial:
     #CARGAR LOS DATOS DE LAS JORNADAS
@@ -55,4 +55,4 @@ class historial:
 
             page.update()
 
-        return gestionPrincipal.contenido
+        return gestionPrincipal.contenido"""

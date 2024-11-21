@@ -176,8 +176,13 @@ class principal:
         self.editApellido = editarDatosUsuario(page, self.apellidoLi, self.textoSlider, editarDatosLiderCalle.cargarDatosLider)
         self.editTelefono = editarDatosUsuario(page, self.telefonoLi, self.textoSlider, editarDatosLiderCalle.cargarDatosLider)
         self.editCorreo = editarDatosUsuario(page, self.correoLi, self.textoSlider, editarDatosLiderCalle.cargarDatosLider)
-        #APP BAR
         
+        self.editNombreJefe = editarDatosUsuario(page, self.nombreJ, self.textoSlider, editarDatosJefeFamilia.cargarDatosJefe)
+        self.editApellidoJefe = editarDatosUsuario(page, self.apellidoJ, self.textoSlider, editarDatosJefeFamilia.cargarDatosJefe)
+        self.editTelefonoJefe = editarDatosUsuario(page, self.telefonoJ, self.textoSlider, editarDatosJefeFamilia.cargarDatosJefe)
+        self.editCorreoJefe = editarDatosUsuario(page, self.correoJ, self.textoSlider, editarDatosJefeFamilia.cargarDatosJefe)
+
+        #APP BAR
         self.appbar = appBar(page, self.indicator, self.logo)
         self.appbar.cambiarTitulo(mensaje.tituloComunidad)
 
@@ -321,7 +326,7 @@ class principal:
                                     controls=[
                                         Text("Nombre:"),
                                         self.nombreJ,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: editarDatosJefeFamilia.editNombre(page, self.iDLiderCalle, self.tablaPedido, self.tablaCilindros))
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: editarDatosJefeFamilia.ejecutarEdicionSencilla(self.editNombreJefe.editNombre, consulta.actualizarNombreJefe))
                                     ]
                                 ),
                                 Row(
@@ -331,7 +336,7 @@ class principal:
                                         Text("Apellido:"),
                                         self.apellidoJ,
 
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: editarDatosJefeFamilia.editApellido(page, self.iDLiderCalle, self.tablaPedido, self.tablaCilindros))
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: editarDatosJefeFamilia.ejecutarEdicionSencilla(self.editApellidoJefe.editApellido, consulta.actualizarApellidoJefe))
                                     ]
                                 ),
                                 Row(
@@ -356,7 +361,7 @@ class principal:
                                     controls=[
                                         Text("Telefono:"),
                                         self.telefonoJ,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Telefono", on_click=lambda _: editarDatosJefeFamilia.editTelefono(page, self.iDLiderCalle, self.tablaPedido, self.tablaCilindros))
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Telefono", on_click=lambda _: editarDatosJefeFamilia.ejecutarEdicionCompleja(consulta.verificarTelefonoEditar, consulta.actualizarTelefonoJefe, self.editTelefonoJefe.editTelefono))
                                     ]
                                 ),
                                 Row(
@@ -365,7 +370,7 @@ class principal:
                                     controls=[
                                         Text("Correo:"),
                                         self.correoJ,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: editarDatosJefeFamilia.editCorreo(page, self.iDLiderCalle, self.tablaPedido, self.tablaCilindros))
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: editarDatosJefeFamilia.ejecutarEdicionCompleja(consulta.verificarCorreoEditar, consulta.actualizarCorreoJefe, self.editCorreoJefe.editCorreo))
                                     ]
                                 ),
                                 ElevatedButton("Regresar a inicio", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo(mensaje.tituloComunidad)]),
@@ -407,7 +412,7 @@ class principal:
                                     controls=[
                                         Text("Nombre:"),
                                         self.nombreLi,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: self.editNombre.editNombre())
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: self.editNombre.editNombre(consulta.actualizarNombreLider, self.iDLiderCalle))
                                     ]
                                 ),
                                 Row(
@@ -416,7 +421,7 @@ class principal:
                                     controls=[
                                         Text("Apellido:"),
                                         self.apellidoLi,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: self.editApellido.editApellido())
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: self.editApellido.editApellido(consulta.actualizarApellidoLider, self.iDLiderCalle))
                                     ]
                                 ),
                                 Row(
@@ -441,7 +446,7 @@ class principal:
                                     controls=[
                                         Text("Telefono:"),
                                         self.telefonoLi,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Telefono", on_click=lambda _: self.editTelefono.editTelefono())
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Telefono", on_click=lambda _: self.editTelefono.editTelefono(consulta.verificarTelefonoLider, consulta.actualizarTelefonoLider, self.iDLiderCalle))
                                     ]
                                 ),
                                 Row(
@@ -450,7 +455,7 @@ class principal:
                                     controls=[
                                         Text("Correo:"),
                                         self.correoLi,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: self.editCorreo.editCorreo())
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: self.editCorreo.editCorreo(consulta.verificarCorreoLider, consulta.actualizarCorreoLider, self.iDLiderCalle))
                                     ]
                                 ),
                                 ElevatedButton("Regresar a inicio", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo("Mi Comunidad")]),
@@ -617,6 +622,8 @@ class principal:
         self.slider = sliderBase(page, self.indicator, self.formulario)
         self.slider.contruirPrincipal(self.contenedorInicio, self.appbar, self.contenedorReporte, reporteJornada.volverGenerarJornada, self.iDLiderCalle, self.contenedorHistorial, archivoPdf.volverGenerarArchivos, self.contenedorPerfilLider, editarDatosLiderCalle.cargarDatosLider)
         self.slider.cambiarNombreSlider(self.nombreLiderCalle)
+
+        #self.gestionar = gestorAcciones(page, self.idUsuario, self.tablaPedido, self.tablaCilindros, self.columnaCards, self.tituloAgregarJefes)
 
         self.pasarWidget()
         self.iniciarGenerarCartas(page)

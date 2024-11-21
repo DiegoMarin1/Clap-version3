@@ -19,6 +19,28 @@ from datetime import datetime
 from time import sleep
 
 #USADA PARA OBTNER LOS ELEMENTOS QUE NECESITAN LAS OTRAS CLASES
+
+"""class gestorAcciones:
+    def __init__(self, page, iDLiderCalle, tablaPedido, tablaCilindros, columnaCards, tituloAgregarJefes):
+        self.page = page
+        self.iDLiderCalle = iDLiderCalle
+        self.tablaPedido = tablaPedido
+        self.tablaCilindros = tablaCilindros
+        self.columnaCards = columnaCards
+        self.tituloAgregarJefes = tituloAgregarJefes
+
+        self.carticas = cartas(page, self.iDLiderCalle, self.tablaPedido, self.tablaCilindros, formularioJefeFamilia.generarJefe, consulta.obtenerInfoJefesFamiliaCartas, gestionPrincipal.cartas)
+
+    def volverGenerarCartas(self):
+        if db.consultaConRetorno(consulta.verificarJefesFamiliaCartas, [self.iDLiderCalle,]):
+            self.tituloAgregarJefes.visible = False            
+            self.columnaCards.controls.clear()
+            self.columnaCards.controls = self.carticas.generarCards()
+            self.page.update()
+        else:
+            pass
+"""
+
 class gestionPrincipal:
     itemsCilindrosLista = []
     datosCilindrosLista = []
@@ -121,12 +143,12 @@ class gestionPrincipal:
 class cartasJefesFamilia:
     #LIMPIA EL CONTEDOR DE LAS CARTAS
     def volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros):
+        global carticas
         if db.consultaConRetorno(consulta.verificarJefesFamiliaCartas, [iDLiderCalle,]):
             gestionPrincipal.tituloAgregarJefes.visible = False            
             carticas = cartas(page, iDLiderCalle, tablaPedido, tablaCilindros, formularioJefeFamilia.generarJefe, consulta.obtenerInfoJefesFamiliaCartas, gestionPrincipal.cartas)
             gestionPrincipal.columnaCards.controls.clear()
             gestionPrincipal.columnaCards.controls = carticas.generarCards()
-            del carticas
             page.update()
         else:
             pass
@@ -223,7 +245,6 @@ class formularioJefeFamilia:
         page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El cilindro fue seleccionado"))
         page.snack_bar.open = True
         page.update()
-
 
 #FORMULARIO DE JEFES DE FAMILIA Y CILINDROS
 class registrarJefeFamiliaCilindros:
@@ -369,146 +390,6 @@ class registrarJefeFamiliaCilindros:
         mensaje.cerrarAlert(page, alert)
         gestionPrincipal.appbar.cambiarTitulo("Lideres de Calle")
         regresarAtras.regresarAlInicioCompletado(page, cantidadCi, empresa, pico, tamano, nuevoJefe.get_liderId(), tablaPedido, tablaCilindros)
-
-class editarDatosJefeFamilia:
-    #MOSTRAR LOS DATOS DE LOS JEFES
-    def cargarDatosJefe(page):
-        global datosJefeFamilia
-        resultado = db.consultaConRetorno(consulta.mostrarDatosJefe, [cedulaIdentidad,])
-        datosJefeFamilia = jefeFamiliar(resultado[0][2], resultado[0][0], resultado[0][1], resultado[0][3], resultado[0][4], resultado[0][5], resultado[0][6], resultado[0][7])
-
-        gestionPrincipal.nombreJ.value = f"{datosJefeFamilia.nombre}"
-        gestionPrincipal.apellidoJ.value = f"{datosJefeFamilia.apellido}"
-        gestionPrincipal.cedulaJ.value = f"{datosJefeFamilia.cedula}"
-        gestionPrincipal.telefonoJ.value = f"{datosJefeFamilia.telefono}"
-        gestionPrincipal.correoJ.value = f"{datosJefeFamilia.correo}"
-        gestionPrincipal.ubicacionJ.value = f"{datosJefeFamilia.ubicacion}"
-
-        rutas.animar(gestionPrincipal.formulario, gestionPrincipal.contenedorPerfilJefe, gestionPrincipal.contenedorPerfilJefe, page)
-    
-        page.update()
-
-    #SECCION NOMBRE
-    def editNombre(page, iDLiderCalle, tablaPedido, tablaCilindros):
-        entryNombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), validaciones.validarCamposNot(entryNombre, page, True, validaciones.condicionNombres)])
-        entryNombre.value = datosJefeFamilia.nombre
-
-        alertEditNombre = seccionesEditar(page, entryNombre)
-        alertEditNombre.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarCamposSencillos(page, alertEditNombre.entry, iDLiderCalle, tablaPedido, tablaCilindros, alertEditNombre.alert, consulta.actualizarNombreJefe, mensaje.nombreEditadoFinal, 3, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre.alert))])
-
-        page.dialog = alertEditNombre.alert
-        alertEditNombre.alert.open = True
-
-        page.update()
-
-    #SECCION APELLIDO
-    def editApellido(page, iDLiderCalle, tablaPedido, tablaCilindros):
-        entryApellido = TextField(label="Apellido", hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), validaciones.validarCamposNot(entryApellido, page, False, validaciones.condicionNombres)])
-        entryApellido.value = datosJefeFamilia.apellido
-
-        alertEditApellido = seccionesEditar(page, entryApellido)
-        alertEditApellido.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validarCamposSencillos(page, alertEditApellido.entry, iDLiderCalle, tablaPedido, tablaCilindros, alertEditApellido.alert, consulta.actualizarApellidoJefe, mensaje.apellidoEditadoFinal, 4, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido.alert))])
-
-        page.dialog = alertEditApellido.alert
-        alertEditApellido.alert.open = True
-
-        page.update()
-
-    def validarCamposSencillos(page, campo1, iDLiderCalle, tablaPedido, tablaCilindros, alertValidar, query, mensajeFinal, rango, condicion):
-        if (campo1.value == "") or (len(campo1.value) in range(1, rango)):
-            if campo1.value == "":
-                campo1.error_text = mensaje.campoFaltante
-                page.update()
-            if len(campo1.value) in range(1, rango):
-                campo1.error_text = mensaje.minimoCaracteres(rango)
-                page.update()
-        else:
-            db.consultaSinRetorno(query, [campo1.value, cedulaIdentidad])
-            cartasJefesFamilia.volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros)
-            editarDatosJefeFamilia.cargarDatosJefe(page)
-            mensaje.cerrarAlert(page, alertValidar)
-            if condicion == True:
-                gestionPrincipal.appbar.cambiarTitulo(f"cilindros de {campo1.value}")
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text(mensajeFinal))
-            page.snack_bar.open = True
-            page.update()
-
-    #ACOMODAR AQUI NO ACTUALIZA
-    #SECCION CORREO
-    def editCorreo(page, iDLiderCalle, tablaPedido, tablaCilindros):
-        direccion = ""
-        tipo = ""
-
-        if datosJefeFamilia.correo[-10:] == "@gmail.com":
-            direccion = datosJefeFamilia.correo[:-10]
-            tipo = datosJefeFamilia.correo[-10:]
-        else:
-            direccion = datosJefeFamilia.correo[:-12]
-            tipo = datosJefeFamilia.correo[-12:]
-
-        entryCorreo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, entryCorreo), validaciones.validarCamposIn(entryCorreo, page, validaciones.condicinCorreo)])
-        entryCorreo.value = direccion
-        selectTipoCorreo = Dropdown(hint_text="Correo", color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoCorreo), options=[
-                dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com")])
-        selectTipoCorreo.value = tipo
-
-        alertEditCorreo = seccionesEditarCompleja(page, entryCorreo, selectTipoCorreo)
-        alertEditCorreo.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validacionCampoComplejo(page, alertEditCorreo.entry2, alertEditCorreo.entry, iDLiderCalle, tablaPedido, tablaCilindros, alertEditCorreo.alert, mensaje.correoInvalido, consulta.verificarCorreoEditar, mensaje.correoRegistrado, consulta.actualizarCorreoJefe, mensaje.correoGuardado, 3, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo.alert))])
-
-        page.dialog = alertEditCorreo.alert
-        alertEditCorreo.alert.open = True
-
-        page.update()
-    
-    #SECCION TELEFONO
-    def editTelefono(page, iDLiderCalle, tablaPedido, tablaCilindros):
-        codigo = datosJefeFamilia.telefono[:4]
-        telefono = datosJefeFamilia.telefono[-7:]
-
-        selectTipoTelefono = Dropdown(hint_text="Codigo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoTelefono), options=[
-                dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
-        selectTipoTelefono.value = codigo
-        entryTelefono = TextField(label="N telefono", hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), validaciones.validarCamposNot(entryTelefono, page, False, validaciones.condicionNumeros)])
-        entryTelefono.value = telefono
-
-        alertEditTelefono = seccionesEditarCompleja(page, selectTipoTelefono, entryTelefono)
-        alertEditTelefono.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosJefeFamilia.validacionCampoComplejo(page, alertEditTelefono.entry, alertEditTelefono.entry2, iDLiderCalle, tablaPedido, tablaCilindros, alertEditTelefono.alert, mensaje.telefonoInvalido, consulta.verificarTelefonoEditar, mensaje.telefonoRegistrado, consulta.actualizarTelefonoJefe, mensaje.telefonoGuardado, 7, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono.alert))])
-
-        page.dialog = alertEditTelefono.alert
-        alertEditTelefono.alert.open = True
-
-        page.update()
-    
-    def validacionCampoComplejo(page, campo1, campo2, iDLiderCalle, tablaPedido, tablaCilindros, alertEdicion, mensajeInvalido, query, mensajeRepetido, queryGuardar, mensajeFinal, rango, condicion):
-        #TRUE PARA TELEFONO
-        if condicion == True:
-            arreglo = f"{campo1.value}-{campo2.value}"
-        #FALSE PARA CORREO
-        if condicion == False:
-            arreglo = f"{campo2.value}{campo1.value}"
-
-        if (campo2.value == "") or (len(campo2.value) in range(1, rango)):
-            if campo2.value == "":
-                campo2.error_text = mensaje.campoFaltante
-                page.update()
-
-            if len(campo2.value) in range(1, rango):
-                campo2.error_text = mensajeInvalido
-                page.update()
-
-        elif db.consultaConRetorno(query, [arreglo,]):
-            page.snack_bar = SnackBar(content=Text(mensajeRepetido))
-            page.snack_bar.open = True
-            page.update()
-
-        else:
-            db.consultaSinRetorno(queryGuardar, [arreglo, cedulaIdentidad])
-            cartasJefesFamilia.volverGenerarCartas(page, iDLiderCalle, tablaPedido, tablaCilindros)
-            editarDatosJefeFamilia.cargarDatosJefe(page)
-            mensaje.cerrarAlert(page, alertEdicion)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text(mensajeFinal))
-            page.snack_bar.open = True
-            page.update()
 
 class crudCilindros:
     #ACCION PARA EJECUTAR EL CRUD
@@ -830,6 +711,30 @@ class archivoPdf:
     #LIMPIAN LOS CONTENEDORES ANTES DE CARGAR LA INFORAMCION
     def volverGenerarArchivos(page):
         archivos.volverGenerarArchivos(page, consulta.obtenerIdArchivos, mensaje.datosUsuarioLista[0][0], gestionPrincipal.tablaSeleccionarHistorial, historial.abrirHistorial)
+
+class editarDatosJefeFamilia:
+    #MOSTRAR LOS DATOS DE LOS JEFES
+    def cargarDatosJefe(page):
+        global datosJefeFamilia
+        resultado = db.consultaConRetorno(consulta.mostrarDatosJefe, [cedulaIdentidad,])
+        datosJefeFamilia = jefeFamiliar(resultado[0][2], resultado[0][0], resultado[0][1], resultado[0][3], resultado[0][4], resultado[0][5], resultado[0][6], resultado[0][7])
+
+        gestionPrincipal.nombreJ.value = f"{datosJefeFamilia.nombre}"
+        gestionPrincipal.apellidoJ.value = f"{datosJefeFamilia.apellido}"
+        gestionPrincipal.cedulaJ.value = f"{datosJefeFamilia.cedula}"
+        gestionPrincipal.telefonoJ.value = f"{datosJefeFamilia.telefono}"
+        gestionPrincipal.correoJ.value = f"{datosJefeFamilia.correo}"
+        gestionPrincipal.ubicacionJ.value = f"{datosJefeFamilia.ubicacion}"
+
+        rutas.animar(gestionPrincipal.formulario, gestionPrincipal.contenedorPerfilJefe, gestionPrincipal.contenedorPerfilJefe, page)
+    
+        page.update()
+
+    def ejecutarEdicionSencilla(objeto, consulta):
+        objeto(consulta, cedulaIdentidad)
+
+    def ejecutarEdicionCompleja(consultaVerificar, consultaGuardar, objeto):
+        objeto(consultaVerificar, consultaGuardar, cedulaIdentidad)
 
 class editarDatosLiderCalle:
     def cargarDatosLider(page):
