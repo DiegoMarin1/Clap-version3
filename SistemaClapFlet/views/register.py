@@ -38,7 +38,7 @@ class register:
         self.codigoTelefono = Dropdown(hint_text="Codigo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.codigoTelefono), options=[
                 dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
         self.numeroTelefono = TextField(label="N telefono", hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, input_filter=NumbersOnlyInputFilter(), on_change=lambda _: mensaje.quitarError(page, self.numeroTelefono))
-        self.correo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, input_filter=InputFilter(regex_string=validaciones.condicionAlfanum) ,on_change=lambda _: mensaje.quitarError(page, self.correo))
+        self.correo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, input_filter=InputFilter(regex_string=validaciones.condicionAlfanum), on_change=lambda _: mensaje.quitarError(page, self.correo))
         self.tipoCorreo = Dropdown(hint_text="Correo", color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCorreo), options=[
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com"), dropdown.Option("@outlook.com")])
 

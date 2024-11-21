@@ -4,7 +4,7 @@ from controlador.rutas import rutas
 from controlador.mensajes import mensaje, validaciones
 from modelo.modelPrincipal import lider, jefeFamiliar
 from modelo.consultas import consulta
-from modelo.modelVista import cartas, seccionesEditar, seccionesEditarCompleja
+from modelo.modelVista import seccionesEditar, seccionesEditarCompleja
 
 import modelo.reporte
 from modelo.reporte import *
@@ -334,123 +334,6 @@ class preciosCilindros:
 
             mensaje.cerrarAlert(page, alertJornada)
             page.snack_bar = SnackBar(content=Text("Precios Actualizados Correctamente"), bgcolor="GREEN")
-            page.snack_bar.open = True
-            page.update()
-
-class editarDatosUsuario:
-    def editNombreLi(page, slider):
-        entryNombre = TextField(label="Nombre", hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), validaciones.validarCamposNot(entryNombre, page, False, validaciones.condicionNombres)])
-        entryNombre.value = gestionPrincipal.nombreLi.value
-
-        alertEditNombre = seccionesEditar(page, entryNombre)
-        alertEditNombre.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, alertEditNombre.entry, alertEditNombre.alert, 3, consulta.actualizarNombreLider, slider, datosUsuario.volverCargarTusDatos, mensaje.nombreEditadoFinal, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre.alert))])
-
-        page.dialog = alertEditNombre.alert
-        alertEditNombre.alert.open = True
-
-        page.update()
-
-    def editApellidoLi(page, slider):
-
-        entryApellido = TextField(label="Apellido", hint_text="Minimo 4 caracteres", max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), validaciones.validarCamposNot(entryApellido, page, False, validaciones.condicionNombres)])
-        entryApellido.value = gestionPrincipal.apellidoLi.value
-
-        alertEditApellido = seccionesEditar(page, entryApellido)
-        alertEditApellido.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, alertEditApellido.entry, alertEditApellido.alert, 4, consulta.actualizarApellidoLider, slider, datosUsuario.volverCargarTusDatos, mensaje.apellidoEditadoFinal, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido.alert))])
-
-        page.dialog = alertEditApellido.alert
-        alertEditApellido.alert.open = True
-
-        page.update()
-
-    def ValidarEdicionSencilla(page, widget, alertEdicion, rango, query, Slider, funcion, mensajeFinal, condicion):
-        if (widget.value == "") or (len(widget.value) in range(1, rango)):
-            if widget.value == "":
-                widget.error_text = mensaje.campofaltante
-            if len(widget.value) in range(1, rango):
-                widget.error_text = mensaje.minimoCaracteres(rango)
-                page.update()
-        else:
-            db.consultaSinRetorno(query, [widget.value, mensaje.datosUsuarioLista[0][0]])
-            if condicion == True:
-                Slider.value = f"{widget.value}"
-            funcion(page)
-            mensaje.cerrarAlert(page, alertEdicion)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text(mensajeFinal))
-            page.snack_bar.open = True
-            page.update()
-
-    def editTelefonoLi(page):
-        codigo = gestionPrincipal.telefonoLi.value[:4]
-        telefono = gestionPrincipal.telefonoLi.value[-7:]
-
-        selectTipoTelefono = Dropdown(hint_text="Codigo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoTelefono), options=[
-                dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
-        selectTipoTelefono.value = codigo
-        entryTelefono = TextField(label="N telefono", hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), validaciones.validarCamposNot(entryTelefono, page, True, validaciones.condicionNumeros)])
-        entryTelefono.value = telefono
-
-        alertEditTelefono = seccionesEditarCompleja(page, selectTipoTelefono, entryTelefono)
-        alertEditTelefono.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, alertEditTelefono.entry, alertEditTelefono.entry2, alertEditTelefono.alert, mensaje.telefonoInvalido, consulta.verificarTelefonoLider, mensaje.telefonoRegistrado, consulta.actualizarTelefonoLider, datosUsuario.volverCargarTusDatos, mensaje.telefonoGuardado, 7, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono.alert))])
-
-        page.dialog = alertEditTelefono.alert
-        alertEditTelefono.alert.open = True
-
-        page.update()
-
-    #SECCION CORREO
-    def editCorreoLi(page):
-        direccion = ""
-        tipo = ""
-
-        if gestionPrincipal.correoLi.value[-10:] == "@gmail.com":
-            direccion = gestionPrincipal.correoLi.value[:-10]
-            tipo = gestionPrincipal.correoLi.value[-10:]
-        else:
-            direccion = gestionPrincipal.correoLi.value[:-12]
-            tipo = gestionPrincipal.correoLi.value[-12:]
-
-        entryCorreo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, entryCorreo), validaciones.validarCamposIn(entryCorreo, page, validaciones.condicinCorreo)])
-        entryCorreo.value = direccion
-        selectTipoCorreo = Dropdown(hint_text="Correo", color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoCorreo), options=[
-                dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com")])
-        selectTipoCorreo.value = tipo
-
-        alertEditCorreo = seccionesEditarCompleja(page, entryCorreo, selectTipoCorreo)
-        alertEditCorreo.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, alertEditCorreo.entry2, alertEditCorreo.entry, alertEditCorreo.alert, mensaje.correoInvalido, consulta.verificarCorreoLider, mensaje.correoRegistrado, consulta.actualizarCorreoLider, datosUsuario.volverCargarTusDatos, mensaje.correoGuardado, 3, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo.alert))])
-
-        page.dialog = alertEditCorreo.alert
-        alertEditCorreo.alert.open = True
-
-        page.update()
-
-    def validarEdicionCompleja(page, campo1, campo2, alertEdicion, mensajeInvalido, query, mensajeRepetido, queryGuardar, funcion, mensajeFinal, rango, condicion):
-        #TRUE PARA TELEFONO
-        if condicion == True:
-            arreglo = f"{campo1.value}-{campo2.value}"
-        #FALSE PARA CORREO
-        if condicion == False:
-            arreglo = f"{campo2.value}{campo1.value}"
-
-        if (campo2.value == "") or (len(campo2.value) in range(1, rango)):
-            if campo2.value == "":
-                campo2.error_text = mensaje.campoFaltante
-                page.update()
-
-            if len(campo2.value) in range(1, rango):
-                campo2.error_text = mensajeInvalido
-                page.update()
-
-        elif db.consultaConRetorno(query, [arreglo,]):
-            page.snack_bar = SnackBar(content=Text(mensajeRepetido))
-            page.snack_bar.open = True
-            page.update()
-        
-        else:
-            db.consultaSinRetorno(queryGuardar, [arreglo, mensaje.datosUsuarioLista[0][0]])
-            funcion(page)
-            mensaje.cerrarAlert(page, alertEdicion)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text(mensajeFinal))
             page.snack_bar.open = True
             page.update()
 

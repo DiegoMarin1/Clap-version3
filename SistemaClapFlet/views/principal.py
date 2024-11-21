@@ -1,10 +1,12 @@
 from flet import *
-from flet import View, AnimatedSwitcher, AnimatedSwitcherTransition, ScrollMode, margin, DataColumn, DataTable, PopupMenuButton, PopupMenuItem, Stack, CircleAvatar, Icon, Image, AnimationCurve, animation, transform, Container, Text, SnackBar, Dropdown, dropdown, alignment, border_radius, border, TextCapitalization, TextField, CrossAxisAlignment, MainAxisAlignment, Column, FontWeight, TextButton, AlertDialog, padding, TextThemeStyle, DataRow, DataCell, Row, icons, IconButton, ElevatedButton
+from flet import InputFilter, TextOnlyInputFilter, NumbersOnlyInputFilter, View, AnimatedSwitcher, AnimatedSwitcherTransition, ScrollMode, margin, DataColumn, DataTable, PopupMenuButton, PopupMenuItem, Stack, CircleAvatar, Icon, Image, AnimationCurve, animation, transform, Container, Text, SnackBar, Dropdown, dropdown, alignment, border_radius, border, TextCapitalization, TextField, CrossAxisAlignment, MainAxisAlignment, Column, FontWeight, TextButton, AlertDialog, padding, TextThemeStyle, DataRow, DataCell, Row, icons, IconButton, ElevatedButton
 
 from flet_route import Params, Basket
 from datetime import datetime
 from time import sleep
 from modelo.modelVista import appBar, sliderBase
+
+from controlador.editarDatos import editarDatosUsuario
 
 import os
 import pathlib
@@ -64,12 +66,12 @@ class principal:
         self.tituloAgregarJefes = Text(mensaje.mensajeSinJefesFamilia, style=TextThemeStyle.TITLE_LARGE)
 
         #TEXTFIELDS REGISTRO
-        self.nombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.nombre), validaciones.validarCamposNot(self.nombre, page, False, validaciones.condicionNombres)])
-        self.apellido = TextField(label=mensaje.apellido, hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.apellido), validaciones.validarCamposNot(self.apellido, page, False, validaciones.condicionNombres)])
+        self.nombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, input_filter=TextOnlyInputFilter(), on_change=lambda _:mensaje.quitarError(page, self.nombre))
+        self.apellido = TextField(label=mensaje.apellido, hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, input_filter=TextOnlyInputFilter(), on_change=lambda _:mensaje.quitarError(page, self.apellido))
         self.tipoCedula = Dropdown(label=mensaje.tipo, color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCedula), options=[
                 dropdown.Option("V"), dropdown.Option("E")])
         self.tipoCedula.value = "V"
-        self.cedula = TextField(label=mensaje.cedula, hint_text=mensaje.minimoCaracteres(7), border_color="#820000", border_radius=20, width=180, height=60, max_length=8, on_change=lambda _: [mensaje.quitarError(page, self.cedula), validaciones.validarCamposNot(self.cedula, page, True, validaciones.condicionNumeros)])
+        self.cedula = TextField(label=mensaje.cedula, hint_text=mensaje.minimoCaracteres(7), border_color="#820000", border_radius=20, width=180, height=60, max_length=8, input_filter=NumbersOnlyInputFilter(), on_change=lambda _: mensaje.quitarError(page, self.cedula))
         self.cantidadCi = Dropdown(label=mensaje.cantidadCilindros, border_radius=30, border_color="#820000", width=300, height=60, value=0, on_change=lambda _: [self.generarCasillasCilindro(page), mensaje.quitarError(page, self.cantidadCi)], options=[
                 dropdown.Option("1"), dropdown.Option("2"), dropdown.Option("3"),
                 dropdown.Option("4"), dropdown.Option("5"), dropdown.Option("6"),
@@ -79,8 +81,8 @@ class principal:
 
         self.codigoTelefono = Dropdown(hint_text=mensaje.codigoTelefono, color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.codigoTelefono), options=[
                 dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
-        self.numeroTelefono = TextField(label=mensaje.nTelefono, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, self.numeroTelefono), validaciones.validarCamposNot(self.numeroTelefono, page, True, validaciones.condicionNumeros)])
-        self.correo = TextField(label=mensaje.correo, hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, self.correo), validaciones.validarCamposIn(self.correo, page, validaciones.condicinCorreo)])
+        self.numeroTelefono = TextField(label=mensaje.nTelefono, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, input_filter=NumbersOnlyInputFilter(), on_change=lambda _: mensaje.quitarError(page, self.numeroTelefono))
+        self.correo = TextField(label=mensaje.correo, hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, input_filter=InputFilter(regex_string=validaciones.condicionAlfanum), on_change=lambda _:mensaje.quitarError(page, self.correo))
         self.tipoCorreo = Dropdown(hint_text=mensaje.tipoCorreo, color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCorreo), options=[
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com"), dropdown.Option("@outlook.com")])
 
@@ -169,6 +171,11 @@ class principal:
             ]
         )
 
+        #CONTROLADORES
+        self.editNombre = editarDatosUsuario(page, self.nombreLi, self.textoSlider, editarDatosLiderCalle.cargarDatosLider)
+        self.editApellido = editarDatosUsuario(page, self.apellidoLi, self.textoSlider, editarDatosLiderCalle.cargarDatosLider)
+        self.editTelefono = editarDatosUsuario(page, self.telefonoLi, self.textoSlider, editarDatosLiderCalle.cargarDatosLider)
+        self.editCorreo = editarDatosUsuario(page, self.correoLi, self.textoSlider, editarDatosLiderCalle.cargarDatosLider)
         #APP BAR
         
         self.appbar = appBar(page, self.indicator, self.logo)
@@ -400,7 +407,7 @@ class principal:
                                     controls=[
                                         Text("Nombre:"),
                                         self.nombreLi,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: editarDatosLiderCalle.editNombreLi(page, self.textoSlider))
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: self.editNombre.editNombre())
                                     ]
                                 ),
                                 Row(
@@ -409,7 +416,7 @@ class principal:
                                     controls=[
                                         Text("Apellido:"),
                                         self.apellidoLi,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: editarDatosLiderCalle.editApellidoLi(page, self.textoSlider))
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: self.editApellido.editApellido())
                                     ]
                                 ),
                                 Row(
@@ -434,7 +441,7 @@ class principal:
                                     controls=[
                                         Text("Telefono:"),
                                         self.telefonoLi,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Telefono", on_click=lambda _: editarDatosLiderCalle.editTelefonoLi(page))
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Telefono", on_click=lambda _: self.editTelefono.editTelefono())
                                     ]
                                 ),
                                 Row(
@@ -443,7 +450,7 @@ class principal:
                                     controls=[
                                         Text("Correo:"),
                                         self.correoLi,
-                                        IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: editarDatosLiderCalle.editCorreoLi(page))
+                                        IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: self.editCorreo.editCorreo())
                                     ]
                                 ),
                                 ElevatedButton("Regresar a inicio", bgcolor="#cb3234", color="#ffffff", on_click=lambda _:[ rutas.animar(self.formulario, self.contenedorInicio, self.contenedorInicio, page), mensaje.cambiarPagina(self.indicator, 5.5), self.appbar.cambiarTitulo("Mi Comunidad")]),

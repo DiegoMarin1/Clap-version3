@@ -2,10 +2,11 @@ from flet import ScrollMode, Container, Text, SnackBar, Dropdown, dropdown, alig
 from controlador.conexion import db
 from controlador.rutas import rutas
 from controlador.mensajes import mensaje, validaciones
-from gestores.gestorLiderPolitico import editarDatosUsuario, archivos
+from gestores.gestorLiderPolitico import archivos
 from modelo.modelPrincipal import jefeFamiliar, lider, cilindro
 from modelo.consultas import consulta
-from modelo.modelVista import cartas, seccionesEditar, seccionesEditarCompleja
+from modelo.modelVista import seccionesEditar, seccionesEditarCompleja
+from controlador.cartas import cartas
 
 import modelo.reporte
 from modelo.reporte import Pdf
@@ -231,51 +232,32 @@ class registrarJefeFamiliaCilindros:
         arregloCorreo = f"{correo.value}{tipoCorreo.value}"
         arregloTelefono = f"{codigoTelefono.value}-{numeroTelefono.value}"
 
-        verificarCedulaJefesFamilia = db.consultaConRetorno(consulta.verificarCedulaJefesFamilia, [arregloCedula,])
-        listaCondicion = [nombre.value, apellido.value, cedula.value, numeroTelefono.value, correo.value, tipoCorreo.value, correo.value, tipoCorreo.value]
-        if ("" or None) in listaCondicion or (cantidadCi.value == 0) or (len(nombre.value) in range(1, 3)) or (len(apellido.value) in range(1, 4)) or (len(cedula.value) in range(1, 7)) or (len(numeroTelefono.value) in range(1, 7)):
-            
-            for control in (nombre, apellido, cedula, numeroTelefono, correo, tipoCorreo, correo, tipoCorreo):
-                if not control.value:
-                    control.error_text = mensaje.campoFaltante
-                    page.update()
+        listaCondicion = {
+            "nombre" : {"min": 3},
+            "apellido" : {"min": 4},
+            "cedula" : {"min":7, "query":consulta.verificarCedulaJefesFamilia, "param":[arregloCedula,], "msj":f"Esta cedula ya esta registrada"},
+            "numeroTelefono" : {"min":7, "query":consulta.verificarTelefonoJefesFamilia, "param":[arregloTelefono,], "msj":"Este numero de telefono ya esta asignado a un usuario"},
+            "correo" : {"min":3, "query":consulta.verificarCorreoJefesFamilia, "param":[arregloCorreo,], "msj":mensaje.correoRegistrado},
+            "tipoCorreo" : {"min":4},
+            "codigoTelefono" : {"min":4},
+            "cantidadCi": {"min":1}
+        }
 
-            if cantidadCi.value == 0:
+        todoValido = True
+
+        for nombreCampo, config in listaCondicion.items():
+            if not (eval(nombreCampo).value) or (len(eval(nombreCampo).value) < config["min"]):
+                validaciones.validarCampos(page, eval(nombreCampo), config["min"])
+                todoValido = False
+            if "query" in config:
+                if bool(validaciones.validarConsultas(page, config["query"], config["param"], config["msj"]) == False):
+                    todoValido = False
+
+        if cantidadCi.value == 0:
                 cantidadCi.error_text = "Campo vacio, por favor seleccione para continuar"
                 page.update()
 
-            if len(nombre.value) in range(1, 3):
-                nombre.error_text = mensaje.minimoCaracteres(3)
-                page.update()
-
-            if len(apellido.value) in range(1, 4):
-                apellido.error_text = mensaje.minimoCaracteres(4)
-                page.update()
-            
-            if len(cedula.value) in range(1, 7):
-                cedula.error_text = mensaje.minimoCaracteres(7)
-                page.update()
-            
-            if len(numeroTelefono.value) in range(1, 7):
-                numeroTelefono.error_text = mensaje.telefonoInvalido
-                page.update()
-
-        elif verificarCedulaJefesFamilia:
-            page.snack_bar = SnackBar(content=Text(f"Esta cedula ya esta registrada, a nombre de {verificarCedulaJefesFamilia[0][0]} {verificarCedulaJefesFamilia[0][1]}"))
-            page.snack_bar.open = True
-            page.update()
-
-        elif db.consultaConRetorno(consulta.verificarTelefonoJefesFamilia, [arregloTelefono,]):
-            page.snack_bar = SnackBar(content=Text("Este numero de telefono ya esta asignado a un usuario"))
-            page.snack_bar.open = True
-            page.update()
-
-        elif db.consultaConRetorno(consulta.verificarCorreoJefesFamilia, [arregloCorreo,]):
-            page.snack_bar = SnackBar(content=Text(mensaje.correoRegistrado))
-            page.snack_bar.open = True
-            page.update()
-
-        else:
+        if todoValido:
             gestionPrincipal.appbar.cambiarTitulo(f"Datos de Cilindros de {nombre.value} {apellido.value}")
             rutas.animar(gestionPrincipal.formulario, gestionPrincipal.formularioCilindro, gestionPrincipal.formularioCilindro, page)
 
@@ -863,100 +845,6 @@ class editarDatosLiderCalle:
         gestionPrincipal.ubicacionLi.value = datosLiderCalle.ubicacion
 
         page.update()
-
-    #SECCION NOMBRE
-    def editNombreLi(page, slider):
-        entryNombre = TextField(label=mensaje.nombre, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryNombre), validaciones.validarCamposNot(entryNombre, page, False, validaciones.condicionNombres)])
-        entryNombre.value = datosLiderCalle.nombre
-
-        alertEditNombre = seccionesEditar(page, entryNombre)
-        alertEditNombre.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, alertEditNombre.entry, alertEditNombre.alert, 3, consulta.actualizarNombreLider, slider, editarDatosLiderCalle.cargarDatosLider, mensaje.nombreEditadoFinal, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditNombre.alert))])
-
-        page.dialog = alertEditNombre.alert
-        alertEditNombre.alert.open = True
-
-        page.update()
-
-    #SECCION APELLIDO
-    def editApellidoLi(page, slider):
-
-        entryApellido = TextField(label="Apellido", hint_text=mensaje.minimoCaracteres(4), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, entryApellido), validaciones.validarCamposNot(entryApellido, page, False, validaciones.condicionNombres)])
-        entryApellido.value = datosLiderCalle.apellido
-
-        alertEditApellido = seccionesEditar(page, entryApellido)
-        alertEditApellido.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.ValidarEdicionSencilla(page, alertEditApellido.entry, alertEditApellido.alert, 4, consulta.actualizarApellidoLider, slider, editarDatosLiderCalle.cargarDatosLider, mensaje.apellidoEditadoFinal, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditApellido.alert))])
-
-        page.dialog = alertEditApellido.alert
-        alertEditApellido.alert.open = True
-
-        page.update()
-
-    #SECCION TELEFONO
-    def editTelefonoLi(page):
-        codigo = datosLiderCalle.telefono[:4]
-        telefono = datosLiderCalle.telefono[-7:]
-
-        selectTipoTelefono = Dropdown(hint_text="Codigo", color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoTelefono), options=[
-                dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
-        selectTipoTelefono.value = codigo
-        entryTelefono = TextField(label=mensaje.nTelefono, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, entryTelefono), validaciones.validarCamposNot(entryTelefono, page, True, validaciones.condicionNumeros)])
-        entryTelefono.value = telefono
-
-        alertEditTelefono = seccionesEditarCompleja(page, selectTipoTelefono, entryTelefono)
-        alertEditTelefono.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, alertEditTelefono.entry, alertEditTelefono.entry2, alertEditTelefono.alert,  mensaje.telefonoInvalido, consulta.verificarTelefonoLider, mensaje.telefonoRegistrado, consulta.actualizarTelefonoLider, editarDatosLiderCalle.cargarDatosLider, mensaje.telefonoGuardado, 7, True)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditTelefono.alert))])
-
-        page.dialog = alertEditTelefono.alert
-        alertEditTelefono.alert.open = True
-
-        page.update()
-
-    #SECCION CORREO
-    def editCorreoLi(page):
-        direccion = ""
-        tipo = ""
-
-        if datosLiderCalle.correo[-10:] == "@gmail.com":
-            direccion = datosLiderCalle.correo[:-10]
-            tipo = datosLiderCalle.correo[-10:]
-        else:
-            direccion = datosLiderCalle.correo[:-12]
-            tipo = datosLiderCalle.correo[-12:]
-
-        entryCorreo = TextField(label="Direccion", hint_text="ej: clapcamoruco", border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _:[mensaje.quitarError(page, entryCorreo), validaciones.validarCamposIn(entryCorreo, page, validaciones.condicinCorreo)])
-        entryCorreo.value = direccion
-        selectTipoCorreo = Dropdown(hint_text="Correo", color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, selectTipoCorreo), options=[
-                dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com")])
-        selectTipoCorreo.value = tipo
-
-        alertEditCorreo = seccionesEditarCompleja(page, entryCorreo, selectTipoCorreo)
-        alertEditCorreo.pasarBoton([ElevatedButton("Guardar Cambios", on_click=lambda _:editarDatosUsuario.validarEdicionCompleja(page, alertEditCorreo.entry2, alertEditCorreo.entry, alertEditCorreo.alert, mensaje.correoInvalido, consulta.verificarCorreoLider, mensaje.correoRegistrado, consulta.actualizarCorreoLider, editarDatosLiderCalle.cargarDatosLider, mensaje.correoGuardado, 3, False)), ElevatedButton("Cancelar", on_click=lambda _:mensaje.cerrarAlert(page, alertEditCorreo.alert))])
-
-        page.dialog = alertEditCorreo.alert
-        alertEditCorreo.alert.open = True
-
-        page.update()
-
-    def validarCorreoLi(page, tipo, correo, alertEditCorreo):
-
-        arregloCorreo = f"{correo.value}{tipo.value}"
-
-        if (correo.value == ""):
-            if correo.value == "":
-                correo.error_text = mensaje.campoFaltante
-                page.update()
-
-        elif db.consultaConRetorno(consulta.verificarCorreoLider, [arregloCorreo,]):
-            page.snack_bar = SnackBar(content=Text("Esta correo ya esta registrado"))
-            page.snack_bar.open = True
-            page.update()
-        
-        else:
-            db.consultaSinRetorno(consulta.actualizarCorreoLider, [arregloCorreo, mensaje.datosUsuarioLista[0][0]])
-            editarDatosLiderCalle.cargarDatosLider(page)
-            mensaje.cerrarAlert(page, alertEditCorreo)
-            page.snack_bar = SnackBar(bgcolor="GREEN", content=Text("El correo se modifico correctamente"))
-            page.snack_bar.open = True
-            page.update()
 
 class regresarAtras:
 

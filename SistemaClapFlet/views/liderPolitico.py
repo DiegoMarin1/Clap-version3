@@ -1,8 +1,12 @@
 from flet import *
-from flet import View, Image, Icon, margin, Offset, ScrollMode, AnimatedSwitcher, DataTable, DataColumn, ListView, PopupMenuButton, PopupMenuItem, Stack, CircleAvatar, Checkbox, AnimatedSwitcherTransition, AnimationCurve, animation, transform, Container, Text, SnackBar, Dropdown, dropdown, alignment, border_radius, border, TextCapitalization, TextField, CrossAxisAlignment, MainAxisAlignment, Column, FontWeight, TextButton, AlertDialog, padding, TextThemeStyle, DataRow, DataCell, Row, icons, IconButton, ElevatedButton
+from flet import InputFilter, TextOnlyInputFilter, NumbersOnlyInputFilter, View, Image, Icon, margin, Offset, ScrollMode, AnimatedSwitcher, DataTable, DataColumn, ListView, PopupMenuButton, PopupMenuItem, Stack, CircleAvatar, Checkbox, AnimatedSwitcherTransition, AnimationCurve, animation, transform, Container, Text, SnackBar, Dropdown, dropdown, alignment, border_radius, border, TextCapitalization, TextField, CrossAxisAlignment, MainAxisAlignment, Column, FontWeight, TextButton, AlertDialog, padding, TextThemeStyle, DataRow, DataCell, Row, icons, IconButton, ElevatedButton
 from flet_route import Params, Basket
 from datetime import datetime
 from time import sleep
+
+#CONTROLADORES
+from controlador.newCaracteristicaCilindro import caracteristicasCilindro
+from controlador.editarDatos import editarDatosUsuario
 
 import os
 import pathlib
@@ -14,8 +18,7 @@ from modelo.modelVista import appBar, sliderBase
 from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas
 from modelo.consultas import consulta
-from gestores.gestorLiderPolitico import *
-from gestores.gestorLiderPolitico import bloqueoUsuario, revelarContrasena, gestionPrincipal, preciosCilindros, editarDatosUsuario, bitacora, archivos, caracteristicasCilindro, datosUsuario, generarCartas, historial
+from gestores.gestorLiderPolitico import bloqueoUsuario, revelarContrasena, gestionPrincipal, preciosCilindros, bitacora, archivos, datosUsuario, generarCartas, historial
 
 class liderPolitico:
     def __init__(self):       
@@ -35,11 +38,10 @@ class liderPolitico:
 
         self.check = Checkbox(on_change=lambda _:bloqueoUsuario.estatusUsuario(page))
 
-        self.entryEmpresa = TextField(label=mensaje.empresa, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryEmpresa), validaciones.validarCamposNot(self.entryEmpresa, page, True, validaciones.condicionAlfanumericos)])
-        self.entryTamano = TextField(label=mensaje.tamano, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryTamano), validaciones.validarCamposNot(self.entryTamano, page, False, validaciones.condicionNombres)])
-        self.entryPico = TextField(label=mensaje.pico, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryPico), validaciones.validarCamposNot(self.entryPico, page, False, validaciones.condicionNombres)])
+        self.entryEmpresa = TextField(label=mensaje.empresa, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, input_filter=InputFilter(regex_string=r"^[a-zA-Z0-9 ]*$"), on_change=lambda _:mensaje.quitarError(page, self.entryEmpresa))
+        self.entryPico = TextField(label=mensaje.pico, hint_text=mensaje.minimoCaracteres(3), max_length=12, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, input_filter=InputFilter(regex_string=r"^[a-zA-Z0-9 ]*$"), on_change=lambda _:mensaje.quitarError(page, self.entryPico))
 
-        self.entryComunidad = TextField(label="Comunidad", hint_text="Minimo 4 caracteres", max_length=30, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, on_change=lambda _:[mensaje.quitarError(page, self.entryComunidad), validaciones.validarCamposNot(self.entryComunidad, page, True, validaciones.condicionAlfanumericos)])
+        self.entryComunidad = TextField(label="Comunidad", hint_text="Minimo 4 caracteres", max_length=30, capitalization=TextCapitalization.SENTENCES, border_radius=30, border_color="#820000", width=300, height=60, input_filter=InputFilter(regex_string=r"^[a-zA-Z0-9 ]*$"), on_change=lambda _:mensaje.quitarError(page, self.entryComunidad))
 
         page.title = "CLAP"
         page.window_maximizable = False
@@ -61,14 +63,12 @@ class liderPolitico:
         self.usuarioP = Text("")
         self.contrasenaP = Text("", visible=False)
 
-        
         self.codigoTelefono = Dropdown(hint_text="Codigo", visible=False, color="black",border_color="#820000", border_radius=20, width=100, height=60, on_change=lambda _: mensaje.quitarError(page, self.codigoTelefono), options=[
                 dropdown.Option("0412"), dropdown.Option("0414"), dropdown.Option("0416"), dropdown.Option("0424"), dropdown.Option("0238")])
-        self.numeroTelefono = TextField(label="N telefono", visible=False, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, on_change=lambda _: [mensaje.quitarError(page, self.numeroTelefono), validaciones.validarCamposNot(self.numeroTelefono, page, True, validaciones.condicionNumeros)])
-        self.correoCambiar = TextField(label="Direccion", visible=False, hint_text="ej: clapcamoruco", max_length=50, border_color="#820000", border_radius=20, width=180, height=60, on_change=lambda _: mensaje.quitarError(page, self.correo))
+        self.numeroTelefono = TextField(label="N telefono", visible=False, hint_text="0000000", border_color="#820000", border_radius=20, width=180, height=60, max_length=7, input_filter=NumbersOnlyInputFilter(), on_change=lambda _: mensaje.quitarError(page, self.numeroTelefono))
+        self.correoCambiar = TextField(label="Direccion", visible=False, hint_text="ej: clapcamoruco", max_length=50, border_color="#820000", border_radius=20, width=180, height=60, input_filter=InputFilter(regex_string=validaciones.condicionAlfanum), on_change=lambda _: mensaje.quitarError(page, self.correo))
         self.tipoCorreo = Dropdown(hint_text="Correo", visible=False, color="black",border_color="#820000", border_radius=20, width=120, height=60, on_change=lambda _: mensaje.quitarError(page, self.tipoCorreo), options=[
                 dropdown.Option("@gmail.com"), dropdown.Option("@hotmail.com"), dropdown.Option("@outlook.com")])
-
 
         self.nombre = Text("")
         self.apellido = Text("")
@@ -99,7 +99,6 @@ class liderPolitico:
         self.tablaLlenarHistorial = DataTable(
             bgcolor="#C5283D",
             columns=[
-                #DataColumn(Text("id")),
                 DataColumn(Text("Ci", color="WHITE")),
                 DataColumn(Text("Nombre", color="WHITE")),
                 DataColumn(Text("Apellido", color="WHITE")),
@@ -123,6 +122,12 @@ class liderPolitico:
         self.appbar = appBar(page, self.indicator, self.logo)
         self.appbar.cambiarTitulo("Lideres de calle")
         
+        #INSTANCIAS PARA EDITAR
+        self.editNombre = editarDatosUsuario(page, self.nombreLi, self.textoSlider, datosUsuario.volverCargarTusDatos)
+        self.editApellido = editarDatosUsuario(page, self.apellidoLi, self.textoSlider, datosUsuario.volverCargarTusDatos)
+        self.editTelefono = editarDatosUsuario(page, self.telefonoLi, self.textoSlider, datosUsuario.volverCargarTusDatos)
+        self.editCorreo = editarDatosUsuario(page, self.correoLi, self.textoSlider, datosUsuario.volverCargarTusDatos)
+
         #CONTENEDORES PRINCIPALES
         self.contenedorInicio = Container(
             height=635,
@@ -181,7 +186,7 @@ class liderPolitico:
                                             controls=[
                                                 Text("Nombre:"),
                                                 self.nombreLi,
-                                                IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: editarDatosUsuario.editNombreLi(page, self.textoSlider))
+                                                IconButton(icon=icons.EDIT, tooltip="Editar Nombre", on_click=lambda _: self.editNombre.editNombre())
                                             ]
                                         ),
                                         Row(
@@ -190,7 +195,7 @@ class liderPolitico:
                                             controls=[
                                                 Text("Apellido:"),
                                                 self.apellidoLi,
-                                                IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: editarDatosUsuario.editApellidoLi(page, self.slider))
+                                                IconButton(icon=icons.EDIT, tooltip="Editar Apellido", on_click=lambda _: self.editApellido.editApellido())
                                             ]
                                         ),
                                         Row(
@@ -207,7 +212,7 @@ class liderPolitico:
                                             controls=[
                                                 Text("Telefono:"),
                                                 self.telefonoLi,
-                                                IconButton(icon=icons.EDIT, tooltip="Editar Telefono", on_click=lambda _: editarDatosUsuario.editTelefonoLi(page))
+                                                IconButton(icon=icons.EDIT, tooltip="Editar Telefono", on_click=lambda _: self.editTelefono.editTelefono())
                                             ]
                                         ),
                                         Row(
@@ -216,7 +221,7 @@ class liderPolitico:
                                             controls=[
                                                 Text("Correo:"),
                                                 self.correoLi,
-                                                IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: editarDatosUsuario.editCorreoLi(page))
+                                                IconButton(icon=icons.EDIT, tooltip="Editar Correo", on_click=lambda _: self.editCorreo.editCorreo())
                                             ]
                                         ),
                                         Row(
@@ -487,8 +492,8 @@ class liderPolitico:
                 spacing=30,
                 horizontal_alignment=CrossAxisAlignment.CENTER,
                 controls=[
-                    ElevatedButton("Agregar nueva Empresa", on_click=lambda _: caracteristicasCilindro.nuevaCaracteristica(page, mensaje.anadirNuevaEmpresa, self.entryEmpresa, caracteristicasCilindro.ValidarNuevaCaracteristica, consulta.verificarEmpresa, mensaje.empresaDuplicada, mensaje.anadidoEmpresa)),
-                    ElevatedButton("Agregar nuevo Pico", on_click=lambda _: caracteristicasCilindro.nuevaCaracteristica(page, mensaje.anadirNuevoPico, self.entryPico, caracteristicasCilindro.ValidarNuevaCaracteristica, consulta.verificarPico, mensaje.picoDuplicado, mensaje.anadidoPico))            
+                    ElevatedButton("Agregar nueva Empresa", on_click=lambda _: caracteristicasCilindro.nuevaCaracteristica(page, mensaje.anadirNuevaEmpresa, self.entryEmpresa, caracteristicasCilindro.ValidarNuevaCaracteristica, consulta.verificarEmpresa, mensaje.empresaDuplicada, mensaje.anadidoEmpresa, consulta.guardarEmpresaNueva)),
+                    ElevatedButton("Agregar nuevo Pico", on_click=lambda _: caracteristicasCilindro.nuevaCaracteristica(page, mensaje.anadirNuevoPico, self.entryPico, caracteristicasCilindro.ValidarNuevaCaracteristica, consulta.verificarPico, mensaje.picoDuplicado, mensaje.anadidoPico, consulta.guardarPicoNuevo))            
                 ]
             )
         )
