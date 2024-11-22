@@ -1,4 +1,5 @@
 from flet import *
+from flet import AlertDialog, Column, Text, border_radius, ScrollMode, ElevatedButton, DataRow, DataCell, SnackBar
 from controlador.mensajes import mensaje
 from controlador.conexion import db
 from modelo.consultas import consulta

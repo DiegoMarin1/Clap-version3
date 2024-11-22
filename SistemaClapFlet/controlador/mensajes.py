@@ -3,6 +3,7 @@ from controlador.conexion import db
 from modelo.consultas import consulta
 import pathlib
 from flet import *
+from flet import Text, SnackBar
 
 class mensaje:
     datosUsuarioLista = []

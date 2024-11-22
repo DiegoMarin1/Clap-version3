@@ -1,4 +1,5 @@
 from flet import *
+from flet import dropdown, Dropdown, border_radius, border, Column, CrossAxisAlignment, FontWeight, Text, AlertDialog, TextButton
 from modelo.consultas import consulta
 from controlador.mensajes import mensaje, validaciones
 from controlador.rutas import rutas

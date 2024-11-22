@@ -1,4 +1,5 @@
 from flet import *
+from flet import padding, border_radius, Column, Text, TextThemeStyle
 from controlador.conexion import db
 
 class cartas:

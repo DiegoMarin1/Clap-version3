@@ -1,4 +1,5 @@
 from flet import *
+from flet import TextOnlyInputFilter, TextCapitalization, TextField, dropdown, Dropdown, NumbersOnlyInputFilter, InputFilter, ElevatedButton, SnackBar, Text
 from modelo.modelVista import seccionesEditar, seccionesEditarCompleja
 from controlador.mensajes import mensaje, validaciones
 from controlador.conexion import db
